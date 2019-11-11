@@ -1,4 +1,4 @@
 {
   "root": "../src",
-  "tests": ["Currency"]
+  "tests": ["Currency","Internal.Currency"]
 }

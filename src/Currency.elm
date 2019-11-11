@@ -1,183 +1,83 @@
-module Currency exposing(Money)
+module Currency exposing(
+     Money
+   , Value
+   , Cents
+   , BankTime
+   , Expiration
+   , Currency
+   , Account
+   , toString
+   , value
+   , credit
+   , debit
+   , emptyAccount
+   , createInfinite
+   , createFinite
+   , createCompCurrency
+   , createFiatCurrency
+   , createAccountWithCurrency
+   )
 
-{-| The currency module models currency with an identity
-and an expiration.
+{-| A model for currency with an identity
+     and an expiration.
+
+## Money, Account, and Value
+
+@docs Money, Account, Value, toString
+
+## Component of Money
+
+@docs Cents, BankTime, Expiration, Currency
+
+## Creating things
+
+@docs createCompCurrency, createFiatCurrency, createFinite, createInfinite, createAccountWithCurrency, emptyAccount
+
+## Operations on Accounts
+
+@docs value, credit, debit
+
+
+
+
 
 -}
 
-import List.Extra
-import String.Interpolate exposing(interpolate)
-import Maybe.Extra
-
+import Internal.Currency as Internal exposing(
+  Money
+  , Value
+  , Cents
+  , BankTime
+  , Expiration
+  , Currency
+  , CurrencyType(..)
+  , value
+  , credit
+  , debit
+  , createInfinite
+  , createFinite
+  , createCompCurrency
+  , createFiatCurrency
+  , createAccountWithCurrency
+  , emptyAccount
+  , greenBucks)
 
 {-| Currency is the fundamental type of this module.
 A Currency value has an amount, a type (Fiat or Complementary).
 a time at which it was issued, and an expiration period,
 which is either Infinite or Finite BankTime
 
-    c1 = {amount = Cents 123, currency = Complementary Cambiatus, issueTime = 0, expiration = Finite 100 }
+    greenBucks : Currency
+    greenBucks = createCompCurrency "Greenbucks"
+
+    m : Money
+    m = createFinite greenBucks 0 365 100.21
+
+    toString m
+    --> "100.21 Greenbucks (C) 0:365"
 
 -}
-type Money =
-    Money { amount : Cents
-    , currency : Currency
-    , issuedAt : BankTime
-    , expiresAt : Expiration
-    }
-
-amount : Money -> Cents
-amount (Money m) =
-    m.amount
-
-currency : Money -> Currency
-currency (Money m) = m.currency
-
-
-issuedAt : Money -> BankTime
-issuedAt (Money m) = m.issuedAt
-
-expiresAt : Money -> Expiration
-expiresAt (Money m) = m.expiresAt
-
-
-sameIssue : Money -> Money -> Bool
-sameIssue a b =
-    issuedAt a == issuedAt b
-
-sameExpiration : Money -> Money -> Bool
-sameExpiration a b =
-    expiresAt a == expiresAt b
-
-
-{-|
-
-    c1 : Money
-    c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c2 : Money
-    c2 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 10, expiresAt = Finite (BankTime 100) }
-
-    c3 : Money
-    c3 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 200) }
-
-    samePeriod c1 c1
-    --> True
-
-    samePeriod c1 c2
-    --> False
-
-    samePeriod c1 c3
-    --> False
--}
-samePeriod : Money -> Money -> Bool
-samePeriod a b =
-    issuedAt a == issuedAt b && expiresAt a == expiresAt b
-
-{-|
-    c1 : Money
-    c1 =  Money {amount = Cents 100, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c2 : Money
-    c2 =  Money {amount = Cents 200, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c3 : Money
-    c3 =  Money {amount = Cents 300, currency = Complementary Cambiatus, issuedAt = BankTime 10, expiresAt = Finite (BankTime 100) }
-
-    group [c1]
-    --> [[c1]]
-
-    group []
-    --> []
-
-    group [c1, c2, c3]
-    --> [[c1,c2], [c3]]
--}
-group : List Money -> List (List Money)
-group list =
-    list
-      |> List.Extra.groupWhile samePeriod
-      |> List.map (\item -> (Tuple.first item)::(Tuple.second item))
-
-
-
-{-| This is DANGEROUS function.  It assumes
-that all elements of the list have the
-same period ahd are of the same currency.
-It should only be called by functions that
-establish these conditions.
-
-    c1 : Money
-    c1 =  Money {amount = Cents 100, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c2 : Money
-    c2 =  Money {amount = Cents 200, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c3 : Money
-    c3 =  Money {amount = Cents 300, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    consolidate [c1,c2]
-    --> Just c3
--}
-consolidate : List Money -> Maybe Money
-consolidate list =
-    case List.head list of
-        Nothing -> Nothing
-        Just (Money m) ->
-           Just <| Money { m | amount = valueInCents_ list}
-
-
-{-|
-
-    c1 : Money
-    c1 =  Money {amount = Cents 100, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c2 : Money
-    c2 =  Money {amount = Cents 200, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    c3 : Money
-    c3 =  Money {amount = Cents 300, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-
-    c4 : Money
-    c4 =  Money {amount = Cents 10, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
-
-    acct : Account
-    acct = Account {currency = Complementary Cambiatus, transactions = [c1,c2]}
-
-    simplify (BankTime 0) acct
-    --> Account {currency = Complementary Cambiatus, transactions = [c3]}
-
-    simplify (BankTime 0) (Account {currency = Complementary Cambiatus, transactions = [c1,c2, c4]})
-    --> Account {currency = Complementary Cambiatus, transactions = [c3, c4]}
--}
-simplify : BankTime -> Account -> Account
-simplify bt ((Account acct) as account) =
-   let
-       (Account acct2) = ensureValid bt account
-       groups = group acct2.transactions
-       transactions = List.map consolidate groups
-         |> Maybe.Extra.values
-   in
-     Account {currency = acct.currency, transactions = transactions}
-
-
-type Value = Value Currency Cents
-
-type Cents = Cents Int
-
-type BankTime = BankTime Int
-
-type Expiration = Infinite | Finite BankTime
-
-
-{-| CurrencyType is either Fiat (like dollars), or Complementary
--}
-type Currency
-    = Fiat CurrencyName
-    | Complementary CurrencyName
-
-
-type CurrencyName =  Cambiatus | Real | Dollar
+type alias Money = Internal.Money
 
 
 {-| An account is a list of Money values for  given currency.
@@ -187,225 +87,133 @@ may have different expiration periods, etc.
 It is assumed that all Money values are denominated
 in the same Currency.  This restriction is enforced
 by the functions which operate on accounts.
--}
-type  Account =
-      Account  { currency: Currency, transactions : List Money }
 
+    greenBucks : Currency
+    greenBucks = createCompCurrency "Greenbucks"
 
--- OPERATIONS AND FUNCTIONS --
+    m1 : Money
+    m1 = createFinite greenBucks 0 365 100.21
 
-{-|
-
-    isValid (BankTime -1)  <| Money  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> False
-
-    isValid (BankTime 0) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> True
-
-    isValid (BankTime 1) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> True
-
-    isValid (BankTime 100) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> True
-
-    isValid (BankTime 101) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> False
-
-    isValid (BankTime 101) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
-    --> True
-
-
--}
-isValid : BankTime -> Money -> Bool
-isValid (BankTime currentTime) (Money m) =
-    case m.issuedAt of
-        (BankTime issueTime) ->
-            if issueTime > currentTime then
-              False
-            else
-              case m.expiresAt of
-                  Infinite -> True
-                  Finite (BankTime expirationTime) ->
-                      expirationTime  >=  currentTime
-
-
-{-|
-   c1 : Money
-   c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-   emptyAcct : Account
-   emptyAcct = Account  { currency = Complementary Cambiatus, transactions = []}
-
-   acct : Account
-   acct = Account  { currency = Complementary Cambiatus, transactions = [c1]})
-
-   ensureValid (BankTime 10) acct
-   --> acct
-
-   ensureValid (BankTime 101 acct
-    --> emptyAcct
-
--}
-ensureValid : BankTime -> Account -> Account
-ensureValid bankTime (Account acct) =
-    Account {currency = acct.currency, transactions = List.filter (isValid bankTime) acct.transactions}
-
-
-{-|
-    c1 : Money
-    c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    m2 : Money
+    m2 = createFinite greenBucks 0 365 100.21
 
     acct : Account
-    acct = Account  { currency = Complementary Cambiatus, transactions = [c1]}
 
-    acct2 : Account
-    acct2 = Account  { currency = Complementary Cambiatus, transactions = [c1,c1]}
+-}
+type  alias Account = Internal.Account
 
-    value (BankTime 10) acct
-    --> Value (Complementary Cambiatus) (Cents 123)
 
-    value (BankTime 101) acct
-    --> Value (Complementary Cambiatus) (Cents 0)
+{-| An account at a given time has a Value
 
-    value (BankTime -1) acct
-    --> Value (Complementary Cambiatus) (Cents 0)
+-}
+type alias Value = Internal.Value
 
-    value (BankTime 10) acct2
-    --> Value (Complementary Cambiatus) (Cents 246)
+
+{-|  We denominate money in integer Cents so as
+to avoid round-off error.
+-}
+type alias Cents = Internal.Cents
+
+
+{-| BankTime t is an abstract integer time which
+can be seconds, days, weeks, whatever
+-}
+type alias BankTime = Internal.BankTime
+
+
+{-| A currency may be finite or infinite,
+that is, expiring or non-expiring.
+
+-}
+type alias Expiration = Internal.Expiration
+
+
+{-| Currency can be fiat or complementary
+-}
+type alias Currency = Internal.Currency
+
+type alias CurrencyType = Internal.CurrencyType
+
+{-|
+
+    greenBucks : Currency
+    greenBucks = createCompCurrency "Greenbucks"
+
+    m1 : Money
+    m1 = createFinite greenBucks 0 365 100.21
+
+    createAccountWithCurrency greenBucks []
+    --> emptyAccount greenBucks
+
+    acct : Account
+    acct = createAccountWithCurrency greenBucks [m1]
+    value acct
+    --> 7
+
+
+-}
+createAccountWithCurrency : Currency -> List Money -> Account
+createAccountWithCurrency = Internal.createAccountWithCurrency
+
+{-| Create an account ofr the given currency with empty transaction list -}
+emptyAccount : Currency -> Account
+emptyAccount = Internal.emptyAccount
+
+{-| Create a complementary currency with given name -}
+createCompCurrency :  String  -> Currency
+createCompCurrency = Internal.createCompCurrency
+
+{-| Create a fiat currency with given name -}
+createFiatCurrency :  String  -> Currency
+createFiatCurrency = Internal.createFiatCurrency
+
+{-| Create money with an expiration date
+
+  greenBucks = createCompCurrency "GreenBucks"
+  m1 = createFinite greenBucks 0 365 100.01
+
+-}
+createFinite : Currency ->  Int -> Int -> Float -> Money
+createFinite = Internal.createFinite
+
+{-| Create money which does not expire -}
+createInfinite : Currency ->  Int -> Float -> Money
+createInfinite = Internal.createInfinite
+
+
+{-|
+A string representation of Money
+-}
+toString : Money -> String
+toString = Internal.stringFromMoney
+
+
+{-|
+
+Return the value of an account at a given time.
 
 -}
 value : BankTime -> Account -> Value
-value  bankTime ((Account acct) as account)=
-  account
-    |> ensureValid bankTime
-    |> valueInCents
-    |> (\v -> Value acct.currency v)
-
+value  = Internal.value
 
 
 {-|
 
-    c1 : Money
-    c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-
-    emptyAcct : Account
-    emptyAcct = Account{ currency = Complementary Cambiatus, transactions = []}
-
-    acct : Account
-    acct = Account  { currency = Complementary Cambiatus, transactions = [c1]}
-
-    acct2 : Account
-    acct2 = Account  { currency = Complementary Cambiatus, transactions = [c1, c1]}
-
-    valueInCents emptyAcct
-    --> (Cents 0)
-
-    valueInCents acct
-    --> (Cents 123)
-
-    valueInCents acct2
-    --> (Cents 246)
-
--}
-valueInCents : Account -> Cents
-valueInCents (Account acct) =
-    valueInCents_ acct.transactions
---  case acct.transactions of
---      [] -> (Cents 0)
---      transactions ->
---         transactions
---            |> List.map amount
---            |> List.map (\(Cents k) -> k)
---            |> List.sum
---            |> (\s -> Cents s)
+Credit an account with a given amount of money at a given time, simplify the result.
 
 
-valueInCents_ : List Money -> Cents
-valueInCents_ list  =
-  case list of
-      [] -> (Cents 0)
-      _ ->
-         list
-            |> List.map amount
-            |> List.map (\(Cents k) -> k)
-            |> List.sum
-            |> (\s -> Cents s)
-
-
--- CONVERSIONS --
-
+--}
+credit : BankTime -> Money -> Account -> Account
+credit = Internal.credit
 
 {-|
 
-    stringFromCents (Cents 123)
-    --> "1.23"
 
--}
-stringFromCents : Cents -> String
-stringFromCents cents =
-    floatFromCents cents |> String.fromFloat
-
-
-{-|
-
-    floatFromCents (Cents 123) |> String.fromFloat
-    --> "1.23"
-
-    floatFromCents (Cents -123) |> String.fromFloat
-        --> "-1.23"
-
--}
-floatFromCents : Cents -> Float
-floatFromCents (Cents k) =
-    (toFloat k) / 100.0
-
-
-stringFromExpiration : Expiration -> String
-stringFromExpiration e =
-  case e of
-      Finite t -> stringFromBankTime t
-      Infinite ->  "Infinite"
-
-
-
-stringFromBankTime : BankTime -> String
-stringFromBankTime (BankTime k) =
-    String.fromInt k
-
-{-|
-
-    stringFromMoney <| Money  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
-    --> "1.23 Cambiatus (C) 0:100"
-
-    stringFromMoney <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
-    --> "1.23 Cambiatus (C) 0:Infinite"
+Debit an account with a given amount of money at a given time, simplify the result.
 
 
 
 -}
-stringFromMoney : Money -> String
-stringFromMoney (Money m) =
-  interpolate "{0} {1} {2}:{3}" [stringFromCents m.amount
-    , stringFromCurrency m.currency
-    , stringFromBankTime m.issuedAt
-    , stringFromExpiration m.expiresAt ]
+debit : BankTime -> Money -> Account -> Account
+debit = Internal.debit
 
-
-stringFromCurrency : Currency -> String
-stringFromCurrency c =
-    case c of
-        Fiat cn -> interpolate "{0} ({1})" [stringFromCurrencyName cn, "F"]
-        Complementary cn -> interpolate "{0} ({1})" [stringFromCurrencyName cn, "C"]
-
-{-|
-
-    stringFromCurrency (Complementary Cambiatus)
-    --> "Cambiatus (C)"
-
--}
-stringFromCurrencyName : CurrencyName -> String
-stringFromCurrencyName cn =
-    case cn of
-        Cambiatus -> "Cambiatus"
-        Real -> "Real"
-        Dollar -> "Dollar"
