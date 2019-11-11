@@ -1,4 +1,6 @@
 
+# A Currency Model
+
 A new model for currency with named currencies that 
 can be either fiat or complementary, and which
 have issue and expiration times.  The latter may be 
@@ -69,3 +71,7 @@ value : BankTime -> Account -> Value
 
 which computes the value of an account at a  given time, 
 taking into consideration issue and expiration dates.  
+
+**Note.** 
+
+We are using `elm-verify-examples` to both document and test the code.
