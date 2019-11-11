@@ -17,12 +17,27 @@ which is either Infinite or Finite BankTime
     c1 = {amount = Cents 123, currency = Complementary Cambiatus, issueTime = 0, expiration = Finite 100 }
 
 -}
-type alias Money =
-    { amount : Cents
+type Money =
+    Money { amount : Cents
     , currency : Currency
     , issuedAt : BankTime
     , expiresAt : Expiration
     }
+
+amount : Money -> Cents
+amount (Money m) =
+    m.amount
+
+currency : Money -> Currency
+currency (Money m) = m.currency
+
+
+issuedAt : Money -> BankTime
+issuedAt (Money m) = m.issuedAt
+
+expiresAt : Money -> Expiration
+expiresAt (Money m) = m.expiresAt
+
 
 type Value = Value Currency Cents
 
@@ -59,28 +74,28 @@ type  Account =
 
 {-|
 
-    isValid (BankTime -1) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    isValid (BankTime -1)  <| Money  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> False
 
-    isValid (BankTime 0) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    isValid (BankTime 0) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> True
 
-    isValid (BankTime 1) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    isValid (BankTime 1) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> True
 
-    isValid (BankTime 100) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    isValid (BankTime 100) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> True
 
-    isValid (BankTime 101) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    isValid (BankTime 101) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> False
 
-    isValid (BankTime 101) {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
+    isValid (BankTime 101) <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
     --> True
 
 
 -}
 isValid : BankTime -> Money -> Bool
-isValid (BankTime currentTime) m =
+isValid (BankTime currentTime) (Money m) =
     case m.issuedAt of
         (BankTime issueTime) ->
             if issueTime > currentTime then
@@ -94,13 +109,13 @@ isValid (BankTime currentTime) m =
 
 {-|
    c1 : Money
-   c1 =  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+   c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
    emptyAcct : Account
-   emptyAcct = Account { currency = Complementary Cambiatus, transactions = []}
+   emptyAcct = Account  { currency = Complementary Cambiatus, transactions = []}
 
    acct : Account
-   acct = Account { currency = Complementary Cambiatus, transactions = [c1]}
+   acct = Account  { currency = Complementary Cambiatus, transactions = [c1]})
 
    ensureValid (BankTime 10) acct
    --> acct
@@ -116,13 +131,13 @@ ensureValid bankTime (Account acct) =
 
 {-|
     c1 : Money
-    c1 =  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     acct : Account
-    acct = Account { currency = Complementary Cambiatus, transactions = [c1]}
+    acct = Account  { currency = Complementary Cambiatus, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account { currency = Complementary Cambiatus, transactions = [c1,c1]}
+    acct2 = Account  { currency = Complementary Cambiatus, transactions = [c1,c1]}
 
     value (BankTime 10) acct
     --> Value (Complementary Cambiatus) (Cents 123)
@@ -149,16 +164,16 @@ value  bankTime ((Account acct) as account)=
 {-|
 
     c1 : Money
-    c1 =  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     emptyAcct : Account
-    emptyAcct = Account { currency = Complementary Cambiatus, transactions = []}
+    emptyAcct = Account{ currency = Complementary Cambiatus, transactions = []}
 
     acct : Account
-    acct = Account { currency = Complementary Cambiatus, transactions = [c1]}
+    acct = Account  { currency = Complementary Cambiatus, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account { currency = Complementary Cambiatus, transactions = [c1, c1]}
+    acct2 = Account  { currency = Complementary Cambiatus, transactions = [c1, c1]}
 
     valueInCents emptyAcct
     --> (Cents 0)
@@ -176,7 +191,7 @@ valueInCents (Account acct) =
       [] -> (Cents 0)
       transactions ->
          transactions
-            |> List.map .amount
+            |> List.map amount
             |> List.map (\(Cents k) -> k)
             |> List.sum
             |> (\s -> Cents s)
@@ -224,17 +239,17 @@ stringFromBankTime (BankTime k) =
 
 {-|
 
-    stringFromMoney {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    stringFromMoney <| Money  {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> "1.23 Cambiatus (C) 0:100"
 
-    stringFromMoney {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
+    stringFromMoney <| Money {amount = Cents 123, currency = Complementary Cambiatus, issuedAt = BankTime 0, expiresAt = Infinite }
     --> "1.23 Cambiatus (C) 0:Infinite"
 
 
 
 -}
 stringFromMoney : Money -> String
-stringFromMoney m =
+stringFromMoney (Money m) =
   interpolate "{0} {1} {2}:{3}" [stringFromCents m.amount
     , stringFromCurrency m.currency
     , stringFromBankTime m.issuedAt
