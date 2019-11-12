@@ -73,6 +73,10 @@ type Currency = Currency CurrencyType String
 type CurrencyType = Fiat | Complementary
 
 
+bankTime : Int -> BankTime
+bankTime t = BankTime t
+
+
 createCurrency : CurrencyType -> String  -> Currency
 createCurrency ctype name = Currency ctype  name
 
@@ -135,7 +139,14 @@ createAccount list =
     createAccountWithCurrency greenBucks [m1]
     --> Account { currency = greenBucks, transactions = [m1] }
 
+    createAccountWithCurrency greenBucks [m1] |> value (bankTime 0) |> valueToString
+    --> "100.21 Greenbucks (C)"
 
+    createAccountWithCurrency greenBucks [m1] |> value (bankTime -1) |> valueToString
+    --> "0 Greenbucks (C)"
+
+    createAccountWithCurrency greenBucks [m1] |> value (bankTime 366) |> valueToString
+    --> "0 Greenbucks (C)"
 -}
 createAccountWithCurrency : Currency -> List Money -> Account
 createAccountWithCurrency currency_ list =
@@ -274,9 +285,9 @@ stringFromMoney (Money m) =
 
 -}
 value : BankTime -> Account -> Value
-value  bankTime ((Account acct) as account)=
+value  bankTime_ ((Account acct) as account)=
   account
-    |> ensureValid bankTime
+    |> ensureValid bankTime_
     |> valueInCents
     |> (\v -> Value acct.currency v)
 
@@ -513,8 +524,8 @@ isValid (BankTime currentTime) (Money m) =
 
 -}
 ensureValid : BankTime -> Account -> Account
-ensureValid bankTime (Account acct) =
-    Account {currency = acct.currency, transactions = List.filter (isValid bankTime) acct.transactions}
+ensureValid bankTime_ (Account acct) =
+    Account {currency = acct.currency, transactions = List.filter (isValid bankTime_) acct.transactions}
 
 
 
@@ -563,6 +574,12 @@ valueInCents_ list  =
 
 -- CONVERSIONS --
 
+
+
+
+valueToString : Value -> String
+valueToString (Value currency_ cents) =
+    interpolate "{1} {0}" [stringFromCurrency currency_, stringFromCents cents]
 
 {-|
 

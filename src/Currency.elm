@@ -142,13 +142,16 @@ type alias CurrencyType = Internal.CurrencyType
     m1 : Money
     m1 = createFinite greenBucks 0 365 100.21
 
+    m2 : Money
+    m2 = createFinite greenBucks 0 365 3.17
+
+
     createAccountWithCurrency greenBucks []
     --> emptyAccount greenBucks
 
     acct : Account
     acct = createAccountWithCurrency greenBucks [m1]
-    value acct
-    --> 7
+    --> Account { currency = greenBucks, transactions = [m2] }
 
 
 -}

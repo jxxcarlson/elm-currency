@@ -31,8 +31,20 @@ One creates money this way:
 And and acccount like this:
 
 ```elm
-    account : Account 
-    account = makeAccount [m, m]
-    value account 
-    --> 0     
+    createAccountWithCurrency greenBucks [m] 
+       |> value (bankTime 0) |> valueToString
+    --> "100.21 Greenbucks (C)"
+
+    createAccountWithCurrency greenBucks [m] 
+       |> value (bankTime -1) |> valueToString
+    --> "0 Greenbucks (C)"
+
+    createAccountWithCurrency greenBucks [m] 
+       |> value (bankTime 366) |> valueToString
+    --> "0 Greenbucks (C)" 
 ```
+
+See the documentation for module `Currency` for more information, e,g,, 
+how credit or debit an account.
+
+**Note:** This is work in progress.
