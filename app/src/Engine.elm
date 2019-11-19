@@ -21,7 +21,7 @@ config =
 
 initialState : Int -> State
 initialState k =
-    { businesses = EngineData.businesses
+    { businesses = []
      , households = []
      , seed = Random.initialSeed 1234
      , randInt = 4321
@@ -32,7 +32,7 @@ initialStateWithHouseholds intSeed numberOfHouseholds =
    let
        s = initialState intSeed
    in
-       {s | households = EngineData.generateHouseholds intSeed numberOfHouseholds}
+       {s | households = EngineData.generateHouseholds intSeed numberOfHouseholds,  businesses = EngineData.businesses}
 
 render : State -> Html CellGrid.Render.Msg
 render s =

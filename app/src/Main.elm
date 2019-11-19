@@ -85,7 +85,7 @@ mainColumn model =
     column mainColumnStyle
         [ column [ centerX, spacing 20 ]
             [ title "Simulator II"
-            , Engine.render (Engine.initialStateWithHouseholds 85452985 20) |> Element.html |> Element.map CellGrid
+            , Engine.render (Engine.initialStateWithHouseholds 85 400) |> Element.html |> Element.map CellGrid
             --, inputText model
            -- , appButton
             --, outputDisplay model

@@ -87,9 +87,10 @@ generateHouseholds : Int -> Int -> List Entity
 generateHouseholds intSeed numberOfHouseholds =
   let
     i = initialHouseHoldGeneratorState intSeed config.maxHouseholds
-    s = lastHouseHoldGeneratorState i
+    s = List.foldl newState i (List.range 2  numberOfHouseholds)
   in
     s.households
+
 
 
 newState : Int -> HouseHoldGeneratorState -> HouseHoldGeneratorState
@@ -102,31 +103,8 @@ newState k s =
          newHousehold = initialHousehold |> setPosition i j |> setName newName
      in
        {s | count = newCount
-
+          , seed = seed2
           , existingPositions = (Position i j) :: s.existingPositions
-          , households = newHousehold :: s.households} |> lastHouseHoldGeneratorState
-
-
-lastHouseHoldGeneratorState :   HouseHoldGeneratorState -> HouseHoldGeneratorState
-lastHouseHoldGeneratorState s =
-    if List.length s.households >= s.maxHouseHolds then
-      s
-    else
-      let
-         (i, seed1) = Random.step (Random.int 0 config.gridWidth) s.seed
-         (j, seed2) = Random.step (Random.int 0 config.gridWidth) seed1
-      in
-        if List.member (Position i j) s.existingPositions then
-           s |> lastHouseHoldGeneratorState
-        else
-          let
-              newCount = s.count + 1
-              newName = String.fromInt newCount
-              newHousehold = initialHousehold |> setPosition i j |> setName newName
-          in
-            {s | count = newCount
-              , seed = seed2
-              , existingPositions = (Position i j) :: s.existingPositions
-              , households = newHousehold :: s.households} |> lastHouseHoldGeneratorState
+          , households = newHousehold :: s.households}
 
 
