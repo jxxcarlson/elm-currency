@@ -1,7 +1,11 @@
 module Entity exposing (Entity(..), Common, Characteristics(..)
   , BusinessCharRecord
   , HouseholdCharRecord
-  , TEntity(..))
+  , TEntity(..)
+  , getPosition
+  , setName
+  , setPosition
+  , setColor)
 
 {-|
      business : Entity
@@ -30,11 +34,30 @@ type Entity = Entity Common Characteristics
 type alias Common = {
       name:  String
     , entityType : TEntity
-    , account : Account
+    , complementaryAccount : Account
+    , fiatAccount : Account
     , inventory : List Item
     , position : Position
     , color : Color
    }
+
+setName : String -> Entity -> Entity
+setName name (Entity common characteristics) =
+    Entity { common | name = name } characteristics
+
+
+getPosition : Entity -> Position
+getPosition   (Entity common characteristics) =
+    common.position
+
+setPosition : Int -> Int -> Entity -> Entity
+setPosition i j (Entity common characteristics) =
+    Entity { common | position = Position i j } characteristics
+
+setColor : Float -> Float -> Float ->  Entity -> Entity
+setColor r g b (Entity common characteristics) =
+    Entity { common | color = Color.rgb r g b } characteristics
+
 
 
 type alias Item = { name : String, quantity : Quantity}
