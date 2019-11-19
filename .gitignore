@@ -3,3 +3,4 @@ elm-stuff/
 make.sh
 tests/VVerifyExamples/
 tests/VerifyExamples/
+app/index.html

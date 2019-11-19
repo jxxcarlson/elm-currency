@@ -1,8 +1,8 @@
-module Engine exposing (..)
+module Engine exposing (State)
 
-import Entity
+import Entity exposing(Entity)
 
 type alias State =
-  { businesses = List Entity
-  , households = List Entity
+  { businesses : List Entity
+  , households : List Entity
   }

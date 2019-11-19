@@ -1,19 +1,22 @@
-module Entity exposing (..)
+module Entity exposing (Entity(..), Common, Characteristics(..)
+  , BusinessCharRecord
+  , HouseholdCharRecord
+  , TEntity(..))
 
 {-|
-    business : Entity
-    business = Entity
-      { name = "AAA Bakery"
-      , entityType = TBusiness
-      , account = Money.emptyAccount
-      , inventory = []
-      , position = Position 0 0
-      , color = Color.rgb 1 0 0
-
-
+     business : Entity
+     business = Entity
+        { name = "AAA Bakery"
+        , entityType = TBusiness
+        , account = Money.emptyAccount cambiatus
+        , inventory = []
+        , position = Position 0 0
+        , color = Color.rgb 1 0 0
+       }
+       (BusinessCharacteristics { radius = 10.0 })
 -}
 
-import CellGrid exposing(Position(..))
+import CellGrid exposing(Position)
 import Color exposing(Color)
 import Money exposing(Account)
 
