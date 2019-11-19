@@ -5,6 +5,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , getPosition
   , setName
   , setPosition
+  , getColor
   , setColor)
 
 {-|
@@ -53,6 +54,13 @@ getPosition   (Entity common characteristics) =
 setPosition : Int -> Int -> Entity -> Entity
 setPosition i j (Entity common characteristics) =
     Entity { common | position = Position i j } characteristics
+
+
+
+getColor : Entity -> Color
+getColor (Entity common characteristics) =
+    common.color
+
 
 setColor : Float -> Float -> Float ->  Entity -> Entity
 setColor r g b (Entity common characteristics) =

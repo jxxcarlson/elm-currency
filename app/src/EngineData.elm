@@ -1,4 +1,4 @@
-module EngineData exposing (businesses)
+module EngineData exposing (businesses, config, generateHouseholds)
 
 import Entity exposing(Entity(..), TEntity(..)
   , Characteristics(..)
@@ -16,7 +16,7 @@ import Random
 
 config = {
     gridWidth = 50
-    , maxHouseholds = 30
+    , maxHouseholds = 60
    }
 
 cambiatus = Money.createCompCurrency "Cambiatus"
@@ -41,7 +41,7 @@ business2 =
    business1
      |> setName "B"
      |> setPosition 30 30
-     |> setColor 0 0 1
+     |> setColor 1 0 0
 
 businesses = [business1, business2]
 
@@ -91,9 +91,25 @@ generateHouseholds intSeed numberOfHouseholds =
   in
     s.households
 
+
+newState : Int -> HouseHoldGeneratorState -> HouseHoldGeneratorState
+newState k s =
+    let
+         (i, seed1) = Random.step (Random.int 0 config.gridWidth) s.seed
+         (j, seed2) = Random.step (Random.int 0 config.gridWidth) seed1
+         newCount = s.count + 1
+         newName = String.fromInt newCount
+         newHousehold = initialHousehold |> setPosition i j |> setName newName
+     in
+       {s | count = newCount
+
+          , existingPositions = (Position i j) :: s.existingPositions
+          , households = newHousehold :: s.households} |> lastHouseHoldGeneratorState
+
+
 lastHouseHoldGeneratorState :   HouseHoldGeneratorState -> HouseHoldGeneratorState
 lastHouseHoldGeneratorState s =
-    if List.length s.households == s.maxHouseHolds then
+    if List.length s.households >= s.maxHouseHolds then
       s
     else
       let
@@ -101,7 +117,7 @@ lastHouseHoldGeneratorState s =
          (j, seed2) = Random.step (Random.int 0 config.gridWidth) seed1
       in
         if List.member (Position i j) s.existingPositions then
-          s
+           s |> lastHouseHoldGeneratorState
         else
           let
               newCount = s.count + 1
@@ -109,6 +125,8 @@ lastHouseHoldGeneratorState s =
               newHousehold = initialHousehold |> setPosition i j |> setName newName
           in
             {s | count = newCount
-
+              , seed = seed2
               , existingPositions = (Position i j) :: s.existingPositions
-              , households = newHousehold :: s.households}
+              , households = newHousehold :: s.households} |> lastHouseHoldGeneratorState
+
+

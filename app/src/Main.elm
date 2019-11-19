@@ -12,6 +12,8 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Engine
+import CellGrid.Render
 
 
 main =
@@ -33,6 +35,7 @@ type Msg
     = NoOp
     | InputText String
     | ReverseText
+    | CellGrid CellGrid.Render.Msg
 
 
 type alias Flags =
@@ -64,7 +67,8 @@ update msg model =
         ReverseText ->
             ( { model | output = model.output |> String.reverse |> String.toLower }, Cmd.none )
 
-
+        CellGrid msg_ ->
+            ( model, Cmd.none)
 
 --
 -- VIEW
@@ -80,10 +84,11 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
         [ column [ centerX, spacing 20 ]
-            [ title "Starter app"
-            , inputText model
-            , appButton
-            , outputDisplay model
+            [ title "Simulator II"
+            , Engine.render (Engine.initialStateWithHouseholds 85452985 20) |> Element.html |> Element.map CellGrid
+            --, inputText model
+           -- , appButton
+            --, outputDisplay model
             ]
         ]
 
