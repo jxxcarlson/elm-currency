@@ -1,7 +1,7 @@
 
-# A Currency Model
+# Money
 
-A new model for currency with named currencies that 
+A new model for money with named currencies that 
 can be either fiat or complementary, and which
 have issue and expiration times.  The latter may be 
 finite or infinite.
@@ -28,7 +28,7 @@ One creates money this way:
 ```
 
 
-And and acccount like this:
+And and account like this:
 
 ```elm
     createAccountWithCurrency greenBucks [m] 
@@ -43,6 +43,10 @@ And and acccount like this:
        |> value (bankTime 366) |> valueToString
     --> "0 Greenbucks (C)" 
 ```
+
+Notice that the money created for this currency has an issue date and
+and expiration date. An account with holdings of this 
+valued at times before or after the expiration date has zero value.  
 
 See the documentation for module `Currency` for more information, e,g,, 
 how credit or debit an account.

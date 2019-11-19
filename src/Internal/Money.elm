@@ -1,4 +1,4 @@
-module Internal.Currency exposing (..)
+module Internal.Money exposing (..)
 
 
 {-| A model for currency with an identity

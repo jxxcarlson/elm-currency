@@ -1,4 +1,4 @@
-module Currency exposing(
+module Money exposing(
      Money
    , Value
    , Cents
@@ -7,6 +7,7 @@ module Currency exposing(
    , Currency
    , Account
    , toString
+   , bankTime
    , value
    , credit
    , debit
@@ -16,6 +17,7 @@ module Currency exposing(
    , createCompCurrency
    , createFiatCurrency
    , createAccountWithCurrency
+   , valueToString
    )
 
 {-| A model for currency with an identity
@@ -23,7 +25,7 @@ module Currency exposing(
 
 ## Money, Account, and Value
 
-@docs Money, Account, Value, toString
+@docs Money, Account, Value, bankTime, toString, valueToString
 
 ## Component of Money
 
@@ -43,7 +45,7 @@ module Currency exposing(
 
 -}
 
-import Internal.Currency as Internal exposing(
+import Internal.Money as Internal exposing(
   Money
   , Value
   , Cents
@@ -54,17 +56,19 @@ import Internal.Currency as Internal exposing(
   , value
   , credit
   , debit
+  , bankTime
   , createInfinite
   , createFinite
+  , valueToString
   , createCompCurrency
   , createFiatCurrency
   , createAccountWithCurrency
   , emptyAccount
   , greenBucks)
 
-{-| Currency is the fundamental type of this module.
-A Currency value has an amount, a type (Fiat or Complementary).
-a time at which it was issued, and an expiration period,
+{-| Money is the fundamental type of this module.
+A value of type Money has an amount, a type (Fiat or Complementary).
+a time at which it was issued, and an expiration time,
 which is either Infinite or Finite BankTime
 
     greenBucks : Currency
@@ -88,26 +92,43 @@ It is assumed that all Money values are denominated
 in the same Currency.  This restriction is enforced
 by the functions which operate on accounts.
 
-    greenBucks : Currency
-    greenBucks = createCompCurrency "Greenbucks"
-
-    m1 : Money
-    m1 = createFinite greenBucks 0 365 100.21
-
-    m2 : Money
-    m2 = createFinite greenBucks 0 365 100.21
-
-    acct : Account
-
 -}
 type  alias Account = Internal.Account
 
 
 {-| An account at a given time has a Value
 
+    greenBucks : Currency
+    greenBucks = createCompCurrency "Greenbucks"
+
+    m1 : Money
+    m1 = createFinite greenBucks 0 365 100.00
+
+    m2 : Money
+    m2 = createInFinite greenBucks 0 50.00
+
+    acct : Account
+    acct = createAccountWithCurrency greenBucks [m1, m2]
+    value (bankTime 0) acct |> valueToString
+    --> "150 Greenbucks (C)"
+
+
 -}
 type alias Value = Internal.Value
 
+
+{-| Return a string representation of a Value
+
+-}
+valueToString : Value -> String
+valueToString = Internal.valueToString
+
+
+{-| Create a BankTime value from an Integer
+
+-}
+bankTime : Int -> BankTime
+bankTime = Internal.bankTime
 
 {-|  We denominate money in integer Cents so as
 to avoid round-off error.

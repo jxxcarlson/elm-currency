@@ -1,6 +1,6 @@
 module Data exposing (..)
 
-import Currency exposing(..)
+import Money exposing(..)
 
 
 c1 =
