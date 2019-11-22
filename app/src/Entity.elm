@@ -7,6 +7,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , getPosition
   , getFiatAccount
   , setFiatAccount
+  , fiatHoldingsOEntities
   , setCCAccount
   , getCCAccount
   , setName
@@ -34,6 +35,16 @@ import Money exposing(Account)
 
 
 
+fiatHoldingsOEntities : Int -> List Entity -> Maybe Money.Value
+fiatHoldingsOEntities t list =
+  let
+    mergedAccounts = list
+      |> List.map getFiatAccount
+      |> Money.mergeAccounts
+  in
+    case mergedAccounts of
+        Just accounts -> Just (Money.value (Money.bankTime t) accounts)
+        Nothing -> Nothing
 
 type Entity = Entity Common Characteristics
 

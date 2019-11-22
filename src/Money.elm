@@ -8,16 +8,17 @@ module Money exposing(
    , Account
    , toString
    , bankTime
-   , value
    , createValue
    , credit
    , debit
    , emptyAccount
+   , mergeAccounts
    , createInfinite
    , createFinite
    , createCompCurrency
    , createFiatCurrency
    , createAccountWithCurrency
+   , value
    , valueToString
    )
 
@@ -96,6 +97,8 @@ by the functions which operate on accounts.
 -}
 type  alias Account = Internal.Account
 
+mergeAccounts : List Account -> Maybe Account
+mergeAccounts = Internal.mergeAccounts
 
 {-| An account at a given time has a Value
 

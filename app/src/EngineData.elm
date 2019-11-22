@@ -17,6 +17,7 @@ import Random
 
 type alias Config = {
    tickLoopInterval : Float
+  , cycleLength : Int
   , renderWidth : Float
   ,  gridWidth : Int
   , maxHouseholds : Int
@@ -33,6 +34,7 @@ type alias Config = {
 config : Config
 config = {
      tickLoopInterval = 1000
+     , cycleLength = 30
     , renderWidth = 500
     , gridWidth = 30
     , maxHouseholds = 40

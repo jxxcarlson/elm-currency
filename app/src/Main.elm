@@ -11,10 +11,12 @@ import Element exposing (..)
 import Element.Font as Font
 import Element.Input as Input
 import Element.Background as Background
+import Entity
 import Html exposing (Html)
 import Engine
 import EngineData
 import CellGrid.Render
+import Money
 import Time
 import Style
 import String.Interpolate exposing(interpolate)
@@ -34,6 +36,7 @@ type alias Model =
     { input : String
     , output : String
     , counter : Int
+    , state : Engine.State
     }
 
 
@@ -54,6 +57,7 @@ init flags =
     ( { input = "App started"
       , output = "App started"
       , counter = 0
+      , state = (Engine.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
       }
     , Cmd.none
     )
@@ -79,7 +83,8 @@ update msg model =
             ( model, Cmd.none)
 
         Tick _ ->
-            ({model | counter = model.counter + 1}, Cmd.none)
+            ({model | counter = model.counter + 1
+              , state = Engine.nextState EngineData.config.cycleLength model.counter model.state }, Cmd.none)
 
 --
 -- VIEW
@@ -95,7 +100,7 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column Style.mainColumn
             [ title "Simulator II"
-            , displayGrid
+            , displayState model
             , displayDashboard model
             --, inputText model
            -- , appButton
@@ -103,9 +108,16 @@ mainColumn model =
             ]
 
 displayDashboard  model =
-    row [spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 30)] [
-      el [centerX, Font.size 14, Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
+    row [Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 30)] [
+      el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
+      , el [] (text <| fiatHoldingsDisplay model)
       ]
+
+fiatHoldingsDisplay model =
+    case Entity.fiatHoldingsOEntities model.counter model.state.households  of
+        Just value ->  Money.valueToString value
+        Nothing -> "--"
+
 
 clock : Int -> String
 clock k =
@@ -116,11 +128,11 @@ clock k =
     in
     interpolate "{0}: {1}/{2}" [day, month, dayInMonth]
 
-displayGrid : Element Msg
-displayGrid =
+displayState : Model -> Element Msg
+displayState model =
     row [centerX ] [
        Engine.render
-         (Engine.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
+         model.state
          |> Element.html |> Element.map CellGrid
      ]
 

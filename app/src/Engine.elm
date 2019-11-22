@@ -1,4 +1,4 @@
-module Engine exposing (State, render, initialState, initialStateWithHouseholds)
+module Engine exposing (State, render, nextState, initialState, initialStateWithHouseholds)
 
 import Entity exposing(Entity)
 import EngineData
@@ -76,11 +76,12 @@ nextStateX t state =
 nextState : Int -> Int -> State -> State
 nextState period t state =
     case (modBy period t) of
-        0 -> period0Action t state
-        _ -> identity state
+       0 -> payHouseholds t state
+       15 -> payHouseholds t state
+       _ -> identity state
 
-period0Action : Int -> State -> State
-period0Action t state =
+payHouseholds : Int -> State -> State
+payHouseholds t state =
     let
         households = creditHouseHolds t EngineData.config.monthlyFiatIncome state.households
      in
@@ -100,3 +101,5 @@ creditHousehold t value entity =
         account = Money.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
     in
         Entity.setFiatAccount account entity
+
+

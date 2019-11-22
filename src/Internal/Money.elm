@@ -40,11 +40,27 @@ by the functions which operate on accounts.
 type  Account =
       Account  { currency: Currency, transactions : List Money }
 
+mergeAccounts : List Account -> Maybe Account
+mergeAccounts list =
+    case (Maybe.map getAccountCurrency (List.head list)) of
+        Just currency_ ->
+            Just <| Account { currency = currency_, transactions = List.concat (List.map getTransactions list) }
+        Nothing -> Nothing
+
+
+getAccountCurrency : Account -> Currency
+getAccountCurrency (Account data) =
+    data.currency
+
+getTransactions : Account -> List Money
+getTransactions (Account data) =
+    data.transactions
 
 {-| An account at a given time has a Value
 
 -}
 type Value = Value Currency Cents
+
 
 createValue : Currency -> Float -> Value
 createValue currency_ amount_ =
