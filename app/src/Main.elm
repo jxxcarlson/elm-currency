@@ -8,12 +8,15 @@ module Main exposing (main)
 
 import Browser
 import Element exposing (..)
-import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Element.Background as Background
 import Html exposing (Html)
 import Engine
+import EngineData
 import CellGrid.Render
+import Time
+import Style
 
 
 main =
@@ -28,6 +31,7 @@ main =
 type alias Model =
     { input : String
     , output : String
+    , counter : Int
     }
 
 
@@ -36,6 +40,7 @@ type Msg
     | InputText String
     | ReverseText
     | CellGrid CellGrid.Render.Msg
+    | Tick Time.Posix
 
 
 type alias Flags =
@@ -46,13 +51,14 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { input = "App started"
       , output = "App started"
+      , counter = 0
       }
     , Cmd.none
     )
 
 
 subscriptions model =
-    Sub.none
+    Time.every EngineData.config.tickLoopInterval  Tick
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,6 +76,9 @@ update msg model =
         CellGrid msg_ ->
             ( model, Cmd.none)
 
+        Tick _ ->
+            ({model | counter = model.counter + 1}, Cmd.none)
+
 --
 -- VIEW
 --
@@ -82,16 +91,27 @@ view model =
 
 mainColumn : Model -> Element Msg
 mainColumn model =
-    column mainColumnStyle
-        [ column [ centerX, spacing 20 ]
+    column Style.mainColumn
             [ title "Simulator II"
-            , Engine.render (Engine.initialStateWithHouseholds 85 400) |> Element.html |> Element.map CellGrid
+            , displayGrid
+            , displayDashboard model
             --, inputText model
            -- , appButton
             --, outputDisplay model
             ]
-        ]
 
+displayDashboard  model =
+    row [spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 30)] [
+      el [centerX] (text <| String.fromInt model.counter)
+      ]
+
+displayGrid : Element Msg
+displayGrid =
+    row [centerX ] [
+       Engine.render
+         (Engine.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
+         |> Element.html |> Element.map CellGrid
+     ]
 
 title : String -> Element msg
 title str =
@@ -117,7 +137,7 @@ inputText model =
 appButton : Element Msg
 appButton =
     row [ centerX ]
-        [ Input.button buttonStyle
+        [ Input.button Style.button
             { onPress = Just ReverseText
             , label = el [ centerX, centerY ] (text "Reverse")
             }
@@ -128,18 +148,3 @@ appButton =
 --
 -- STYLE
 --
-
-
-mainColumnStyle =
-    [ centerX
-    , centerY
-    , Background.color (rgb255 240 240 240)
-    , paddingXY 20 20
-    ]
-
-
-buttonStyle =
-    [ Background.color (rgb255 40 40 40)
-    , Font.color (rgb255 255 255 255)
-    , paddingXY 15 8
-    ]

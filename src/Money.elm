@@ -9,6 +9,7 @@ module Money exposing(
    , toString
    , bankTime
    , value
+   , createValue
    , credit
    , debit
    , emptyAccount
@@ -116,6 +117,9 @@ type  alias Account = Internal.Account
 -}
 type alias Value = Internal.Value
 
+
+createValue : Currency -> Float -> Value
+createValue = Internal.createValue
 
 {-| Return a string representation of a Value
 

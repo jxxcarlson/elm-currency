@@ -46,6 +46,10 @@ type  Account =
 -}
 type Value = Value Currency Cents
 
+createValue : Currency -> Float -> Value
+createValue currency_ amount_ =
+    Value currency_ (Cents (round (amount_/100.0)))
+
 
 {-|  We denominate money in integer Cents so as
 to avoid round-off error.

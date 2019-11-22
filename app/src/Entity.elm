@@ -1,6 +1,8 @@
 module Entity exposing (Entity(..), Common, Characteristics(..)
   , BusinessCharRecord
   , HouseholdCharRecord
+  , ItemType(..)
+  , ItemName(..)
   , TEntity(..)
   , getPosition
   , setName
@@ -66,9 +68,14 @@ setColor : Float -> Float -> Float ->  Entity -> Entity
 setColor r g b (Entity common characteristics) =
     Entity { common | color = Color.rgb r g b } characteristics
 
+type alias Item = { itemType : ItemType, quantity : Quantity}
 
+type ItemType = ItemType {
+    itemName : ItemName
+  , price : Money.Value
+  }
 
-type alias Item = { name : String, quantity : Quantity}
+type ItemName = AA | BB
 
 type Quantity = Z Int | R Float
 

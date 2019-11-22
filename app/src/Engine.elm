@@ -58,8 +58,8 @@ toCellGrid s =
 cellStyle : CellStyle Color
 cellStyle =
     { toColor = identity
-    , cellWidth = 10
-     , cellHeight = 10
+    , cellWidth = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
+     , cellHeight = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
     , gridLineColor = Color.rgb 0 0 0.8
     , gridLineWidth = 0.5
     }

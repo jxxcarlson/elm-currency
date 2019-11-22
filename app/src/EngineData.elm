@@ -1,6 +1,7 @@
 module EngineData exposing (businesses, config, generateHouseholds)
 
 import Entity exposing(Entity(..), TEntity(..)
+  ,  ItemType(..), ItemName(..)
   , Characteristics(..)
   , setName
   , setPosition
@@ -14,14 +15,50 @@ import Color exposing(Color)
 import Money exposing(Account)
 import Random
 
+type alias Config = {
+   tickLoopInterval : Float
+  , renderWidth : Float
+  ,  gridWidth : Int
+  , maxHouseholds : Int
+  , contentReleaseInterval : Int
+  , numberOfTimesToWatchContent : Int
+  , businessRadius : Float
+  , itemPrice : Money.Value
+  , monthlyItemConsumption : Int
+  , monthlyFiatIncome : Money.Value
+  , monthlyCCIncome : Money.Value
+ }
+
+config : Config
 config = {
-    gridWidth = 50
-    , maxHouseholds = 60
+     tickLoopInterval = 1000
+    , renderWidth = 500
+    , gridWidth = 30
+    , maxHouseholds = 40
+    , contentReleaseInterval = 15
+    , numberOfTimesToWatchContent = 1
+    , businessRadius = 10.0
+    , itemPrice = Money.createValue real 2
+    , monthlyItemConsumption = 8
+    , monthlyFiatIncome = Money.createValue real 16
+    , monthlyCCIncome = Money.createValue cambiatus 0
    }
 
 cambiatus = Money.createCompCurrency "Cambiatus"
 
 real = Money.createFiatCurrency "Real"
+
+supplier : Entity
+supplier = Entity
+   { name = "X"
+   , entityType = TBusiness
+   , complementaryAccount = Money.emptyAccount cambiatus
+   , fiatAccount = Money.emptyAccount real
+   , inventory = []
+   , position = Position (config.gridWidth - 5) (config.gridWidth - 5) -- Position (config.gridWidth - 5) (config.gridWidth - 5)
+   , color = Color.rgb 0 0 1
+  }
+  (BusinessCharacteristics { radius = config.businessRadius })
 
 
 business1 : Entity
@@ -31,19 +68,19 @@ business1 = Entity
    , complementaryAccount = Money.emptyAccount cambiatus
    , fiatAccount = Money.emptyAccount real
    , inventory = []
-   , position = Position 5 5
+   , position = Position 5(config.gridWidth - 5)
    , color = Color.rgb 1 0 0
   }
-  (BusinessCharacteristics { radius = 10.0 })
+  (BusinessCharacteristics { radius = config.businessRadius })
 
 
 business2 =
    business1
      |> setName "B"
-     |> setPosition 30 30
+     |> setPosition (config.gridWidth - 5) 5
      |> setColor 1 0 0
 
-businesses = [business1, business2]
+businesses = [business1, business2, supplier]
 
 initialHousehold : Entity
 initialHousehold =
@@ -54,7 +91,7 @@ initialHousehold =
    , fiatAccount = Money.emptyAccount real
    , inventory = []
    , position = Position 20 15
-   , color = Color.rgb 1 1 0
+   , color = Color.rgb 0.8 0.8 0.6
   }
   (HouseholdCharacteristics { whatever = "hohoho!" })
 
