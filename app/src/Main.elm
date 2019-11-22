@@ -17,6 +17,8 @@ import EngineData
 import CellGrid.Render
 import Time
 import Style
+import String.Interpolate exposing(interpolate)
+
 
 
 main =
@@ -102,8 +104,17 @@ mainColumn model =
 
 displayDashboard  model =
     row [spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 30)] [
-      el [centerX] (text <| String.fromInt model.counter)
+      el [centerX, Font.size 14, Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
       ]
+
+clock : Int -> String
+clock k =
+    let
+        day = k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 3 ' '
+        month = k // 30 |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
+        dayInMonth = modBy 30 k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
+    in
+    interpolate "{0}: {1}/{2}" [day, month, dayInMonth]
 
 displayGrid : Element Msg
 displayGrid =
