@@ -56,7 +56,7 @@ supplier = Entity
    , fiatAccount = Money.emptyAccount real
    , inventory = []
    , position = Position (config.gridWidth - 5) (config.gridWidth - 5) -- Position (config.gridWidth - 5) (config.gridWidth - 5)
-   , color = Color.rgb 0 0 1
+   , color = Color.rgb 0.4 0.4 1
   }
   (BusinessCharacteristics { radius = config.businessRadius })
 
@@ -69,7 +69,7 @@ business1 = Entity
    , fiatAccount = Money.emptyAccount real
    , inventory = []
    , position = Position 5(config.gridWidth - 5)
-   , color = Color.rgb 1 0 0
+   , color = Color.rgb 0.8 0 0.3
   }
   (BusinessCharacteristics { radius = config.businessRadius })
 
@@ -78,7 +78,9 @@ business2 =
    business1
      |> setName "B"
      |> setPosition (config.gridWidth - 5) 5
-     |> setColor 1 0 0
+     |> setColor 0.8 0 0.3
+
+
 
 businesses = [business1, business2, supplier]
 
