@@ -25,7 +25,8 @@ type alias Config = {
   , businessRadius : Float
   , itemPrice : Money.Value
   , monthlyItemConsumption : Int
-  , monthlyFiatIncome : Money.Value
+  , fiatCurrencyName : String
+  , monthlyFiatIncome : Float
   , monthlyCCIncome : Money.Value
  }
 
@@ -38,22 +39,23 @@ config = {
     , contentReleaseInterval = 15
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
-    , itemPrice = Money.createValue real 2
+    , itemPrice = Money.createValue fiatCurrency 2
     , monthlyItemConsumption = 8
-    , monthlyFiatIncome = Money.createValue real 16
+    , fiatCurrencyName = "Real"
+    , monthlyFiatIncome = 16.0
     , monthlyCCIncome = Money.createValue cambiatus 0
    }
 
 cambiatus = Money.createCompCurrency "Cambiatus"
 
-real = Money.createFiatCurrency "Real"
+fiatCurrency = Money.createFiatCurrency "Real"
 
 supplier : Entity
 supplier = Entity
    { name = "X"
    , entityType = TBusiness
    , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount real
+   , fiatAccount = Money.emptyAccount fiatCurrency
    , inventory = []
    , position = Position (config.gridWidth - 5) (config.gridWidth - 5) -- Position (config.gridWidth - 5) (config.gridWidth - 5)
    , color = Color.rgb 0.4 0.4 1
@@ -66,7 +68,7 @@ business1 = Entity
    { name = "A"
    , entityType = TBusiness
    , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount real
+   , fiatAccount = Money.emptyAccount fiatCurrency
    , inventory = []
    , position = Position 5(config.gridWidth - 5)
    , color = Color.rgb 0.8 0 0.3
@@ -90,7 +92,7 @@ initialHousehold =
   { name = "1"
    , entityType = THousehold
    , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount real
+   , fiatAccount = Money.emptyAccount fiatCurrency
    , inventory = []
    , position = Position 20 15
    , color = Color.rgb 0.8 0.8 0.6

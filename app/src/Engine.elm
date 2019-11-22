@@ -3,6 +3,7 @@ module Engine exposing (State, render, initialState, initialStateWithHouseholds)
 import Entity exposing(Entity)
 import EngineData
 import Random
+import Money
 import Html exposing (Html)
 import Color exposing(Color)
 import CellGrid exposing(CellGrid, Dimensions)
@@ -64,9 +65,38 @@ cellStyle =
     , gridLineWidth = 0.5
     }
 
-nextState : Int -> State -> State
-nextState t state =
+nextStateX : Int -> State -> State
+nextStateX t state =
     let
         (newRandInt, newSeed) = Random.step (Random.int 0 config.maxRandInt) state.seed
     in
     {state | randInt = newRandInt, seed = newSeed}
+
+
+nextState : Int -> Int -> State -> State
+nextState period t state =
+    case (modBy period t) of
+        0 -> period0Action t state
+        _ -> identity state
+
+period0Action : Int -> State -> State
+period0Action t state =
+    let
+        households = creditHouseHolds t EngineData.config.monthlyFiatIncome state.households
+     in
+        {state | households = households}
+
+
+creditHouseHolds : Int -> Float -> List Entity -> List Entity
+creditHouseHolds t value households =
+   List.map (creditHousehold t value) households
+
+
+creditHousehold : Int -> Float -> Entity -> Entity
+creditHousehold t value entity =
+    let
+        currency = Money.createFiatCurrency EngineData.config.fiatCurrencyName
+        money = Money.createInfinite currency 0 EngineData.config.monthlyFiatIncome
+        account = Money.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
+    in
+        Entity.setFiatAccount account entity

@@ -5,6 +5,10 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , ItemName(..)
   , TEntity(..)
   , getPosition
+  , getFiatAccount
+  , setFiatAccount
+  , setCCAccount
+  , getCCAccount
   , setName
   , setPosition
   , getColor
@@ -43,6 +47,24 @@ type alias Common = {
     , position : Position
     , color : Color
    }
+
+
+getFiatAccount : Entity -> Money.Account
+getFiatAccount (Entity common _) =
+    common.fiatAccount
+
+setFiatAccount : Account -> Entity -> Entity
+setFiatAccount account (Entity common char) =
+    Entity { common | fiatAccount = account} char
+
+getCCAccount : Entity -> Money.Account
+getCCAccount (Entity common _) =
+    common.complementaryAccount
+
+setCCAccount : Account -> Entity -> Entity
+setCCAccount account (Entity common char) =
+    Entity { common | complementaryAccount = account} char
+
 
 setName : String -> Entity -> Entity
 setName name (Entity common characteristics) =
