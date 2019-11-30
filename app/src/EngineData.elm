@@ -37,7 +37,7 @@ config = {
      , cycleLength = 30
     , renderWidth = 500
     , gridWidth = 30
-    , maxHouseholds = 40
+    , maxHouseholds = 20
     , contentReleaseInterval = 15
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
@@ -55,7 +55,7 @@ fiatCurrency = Money.createFiatCurrency "Real"
 supplier : Entity
 supplier = Entity
    { name = "X"
-   , entityType = TBusiness
+   , entityType = TSupplier
    , complementaryAccount = Money.emptyAccount cambiatus
    , fiatAccount = Money.emptyAccount fiatCurrency
    , inventory = []
@@ -68,7 +68,7 @@ supplier = Entity
 business1 : Entity
 business1 = Entity
    { name = "A"
-   , entityType = TBusiness
+   , entityType = TShop
    , complementaryAccount = Money.emptyAccount cambiatus
    , fiatAccount = Money.emptyAccount fiatCurrency
    , inventory = []

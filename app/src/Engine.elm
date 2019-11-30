@@ -76,9 +76,14 @@ nextStateX t state =
 nextState : Int -> Int -> State -> State
 nextState period t state =
     case (modBy period t) of
-       0 -> payHouseholds t state
-       15 -> payHouseholds t state
-       _ -> identity state
+       0 -> payHouseholds t state |> dailyActivity t
+       15 -> payHouseholds t state |> dailyActivity t
+       _ ->  dailyActivity t state
+
+
+dailyActivity : Int -> State -> State
+dailyActivity t state =
+    state
 
 payHouseholds : Int -> State -> State
 payHouseholds t state =

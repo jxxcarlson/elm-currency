@@ -113,7 +113,7 @@ type ItemName = AA | BB
 type Quantity = Z Int | R Float
 
 
-type TEntity = TBusiness | THousehold
+type TEntity = TShop | TSupplier | THousehold
 
 type Characteristics =
     BusinessCharacteristics BusinessCharRecord | HouseholdCharacteristics HouseholdCharRecord
