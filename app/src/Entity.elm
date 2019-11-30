@@ -5,11 +5,14 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , ItemName(..)
   , TEntity(..)
   , getPosition
+  , distance
   , getFiatAccount
   , setFiatAccount
+  , inventorySize
   , fiatHoldingsOEntities
   , setCCAccount
   , getCCAccount
+  , getType
   , setName
   , setPosition
   , getColor
@@ -60,6 +63,19 @@ type alias Common = {
    }
 
 
+positionDistance : Position -> Position -> Float
+positionDistance p q =
+  let
+      deltaX = p.row - q.row |> toFloat
+      deltaY = p.column - q.column |> toFloat
+  in
+    sqrt (deltaX * deltaX + deltaY * deltaY)
+
+
+distance : Entity -> Entity -> Float
+distance (Entity common1 _)  (Entity common2 _)=
+   positionDistance common1.position common2.position
+
 getFiatAccount : Entity -> Money.Account
 getFiatAccount (Entity common _) =
     common.fiatAccount
@@ -81,6 +97,9 @@ setName : String -> Entity -> Entity
 setName name (Entity common characteristics) =
     Entity { common | name = name } characteristics
 
+getType : Entity ->TEntity
+getType (Entity common _) =
+    common.entityType
 
 getPosition : Entity -> Position
 getPosition   (Entity common characteristics) =
@@ -125,5 +144,10 @@ type alias BusinessCharRecord =
    }
 
 type alias HouseholdCharRecord = {
-   whatever : String
+  monthlyConsumptionA : Int
  }
+
+
+inventorySize : Entity -> Int
+inventorySize (Entity common _) =
+       List.length common.inventory

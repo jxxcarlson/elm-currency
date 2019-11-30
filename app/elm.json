@@ -15,6 +15,7 @@
             "elm/time": "1.0.0",
             "elm-community/list-extra": "8.2.2",
             "elm-community/maybe-extra": "5.0.0",
+            "elm-community/random-extra": "3.1.0",
             "jxxcarlson/elm-cell-grid": "8.0.0",
             "jxxcarlson/elm-graph": "3.0.0",
             "lukewestby/elm-string-interpolate": "1.0.4",
@@ -33,7 +34,8 @@
             "elm-explorations/webgl": "1.1.1",
             "folkertdev/elm-flate": "2.0.3",
             "justgook/elm-image": "2.0.1",
-            "mpizenberg/elm-pointer-events": "4.0.1"
+            "mpizenberg/elm-pointer-events": "4.0.1",
+            "owanturist/elm-union-find": "1.0.0"
         }
     },
     "test-dependencies": {

@@ -3,6 +3,7 @@ module Engine exposing (State, render, nextState, initialState, initialStateWith
 import Entity exposing(Entity)
 import EngineData
 import Random
+import Random.List
 import Money
 import Html exposing (Html)
 import Color exposing(Color)
@@ -15,6 +16,7 @@ type alias State =
   , seed : Random.Seed
   , randInt : Int
   }
+
 
 
 config =
@@ -65,8 +67,8 @@ cellStyle =
     , gridLineWidth = 0.5
     }
 
-nextStateX : Int -> State -> State
-nextStateX t state =
+newRandomNumber : State -> State
+newRandomNumber state =
     let
         (newRandInt, newSeed) = Random.step (Random.int 0 config.maxRandInt) state.seed
     in
@@ -84,6 +86,54 @@ nextState period t state =
 dailyActivity : Int -> State -> State
 dailyActivity t state =
     state
+
+
+householdConsumptionStep : Int -> State -> State
+householdConsumptionStep t state =
+    state
+
+
+nearestShop : Entity -> State -> Maybe Entity
+nearestShop e state =
+    let
+        shops = getShops state
+        distances = (List.map (Entity.distance e)) shops
+        shopswithDistances = List.map2 Tuple.pair shops distances
+        m = List.minimum distances |> Maybe.withDefault 0
+        closestShops = List.filter (\(s, d) -> abs(d - m) < 0.001) shopswithDistances |> List.map Tuple.first
+    in
+        List.head closestShops
+
+getShops : State -> List Entity
+getShops state =
+    List.filter (\e -> Entity.getType e == Entity.TShop) state.businesses
+
+
+{-|
+Select a household at random from those with the least
+consumption of A.
+-}
+selectHouseholdWithLeastInventory : Int -> State -> (State, Maybe Entity)
+selectHouseholdWithLeastInventory t state =
+  let
+      m = minimumHouseholdInventory state
+      candidates = List.filter (\h -> Entity.inventorySize h == m) state.households
+      (result, newSeed) = Random.step (Random.List.choose candidates) state.seed
+  in
+    ({state | seed = newSeed }, Tuple.first result)
+
+
+
+
+minimumHouseholdInventory : State -> Int
+minimumHouseholdInventory state =
+    state.households
+      |> List.map Entity.inventorySize
+      |> List.minimum
+      |> Maybe.withDefault 0
+
+
+
 
 payHouseholds : Int -> State -> State
 payHouseholds t state =

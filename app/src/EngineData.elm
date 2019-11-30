@@ -99,7 +99,7 @@ initialHousehold =
    , position = Position 20 15
    , color = Color.rgb 0.8 0.8 0.6
   }
-  (HouseholdCharacteristics { whatever = "hohoho!" })
+  (HouseholdCharacteristics { monthlyConsumptionA = 0 })
 
 
 type alias HouseHoldGeneratorState =
