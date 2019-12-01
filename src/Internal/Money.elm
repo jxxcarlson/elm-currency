@@ -193,7 +193,7 @@ stringFromMoney (Money m) =
     c1 : Money
     c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
-    negateMoney c1
+    Internal.Money.negate c1
     --> Money {amount = Cents -123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 -}
 negate : Money -> Money
