@@ -4,3 +4,4 @@ make.sh
 tests/VVerifyExamples/
 tests/VerifyExamples/
 app/index.html
+app/tests/VerifyExamples/

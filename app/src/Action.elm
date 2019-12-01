@@ -60,7 +60,15 @@ minimumHouseholdInventory state =
 
 
 
+{-|
 
+    import TestData
+    import Report
+
+    payHouseholds 0 TestData.initialState |> Report.fiatHoldingsDisplay 0
+    --> "320 Real (F)"
+
+-}
 payHouseholds : Int -> State -> State
 payHouseholds t state =
     let

@@ -5,6 +5,11 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 
 
+
 suite : Test
 suite =
-    todo "Implement our first test. See https://package.elm-lang.org/packages/elm-explorations/test/latest for how to do this!"
+    Test.test "#payHouseholds: \n\n    payHouseholds 0 TestData.initialState |> Report.fiatHoldingsDisplay 0\n    --> \"320 Real (F)\"" <|
+            \() ->
+                Expect.equal
+                    (2 + 2)
+                    ( 4 )
