@@ -9,8 +9,6 @@ module Money exposing(
    , toString
    , bankTime
    , createValue
-   , credit
-   , debit
    , emptyAccount
    , mergeAccounts
    , createInfinite
@@ -18,7 +16,6 @@ module Money exposing(
    , createCompCurrency
    , createFiatCurrency
    , createAccountWithCurrency
-   , value
    , valueToString
    )
 
@@ -86,20 +83,6 @@ which is either Infinite or Finite BankTime
 type alias Money = Internal.Money
 
 
-{-| An account is a list of Money values for  given currency.
-Such a structures needed, since different values
-may have different expiration periods, etc.
-
-It is assumed that all Money values are denominated
-in the same Currency.  This restriction is enforced
-by the functions which operate on accounts.
-
--}
-type  alias Account = Internal.Account
-
-mergeAccounts : List Account -> Maybe Account
-mergeAccounts = Internal.mergeAccounts
-
 {-| An account at a given time has a Value
 
     greenBucks : Currency
@@ -162,33 +145,6 @@ type alias Currency = Internal.Currency
 
 type alias CurrencyType = Internal.CurrencyType
 
-{-|
-
-    greenBucks : Currency
-    greenBucks = createCompCurrency "Greenbucks"
-
-    m1 : Money
-    m1 = createFinite greenBucks 0 365 100.21
-
-    m2 : Money
-    m2 = createFinite greenBucks 0 365 3.17
-
-
-    createAccountWithCurrency greenBucks []
-    --> emptyAccount greenBucks
-
-    acct : Account
-    acct = createAccountWithCurrency greenBucks [m1]
-    --> Account { currency = greenBucks, transactions = [m2] }
-
-
--}
-createAccountWithCurrency : Currency -> List Money -> Account
-createAccountWithCurrency = Internal.createAccountWithCurrency
-
-{-| Create an account ofr the given currency with empty transaction list -}
-emptyAccount : Currency -> Account
-emptyAccount = Internal.emptyAccount
 
 {-| Create a complementary currency with given name -}
 createCompCurrency :  String  -> Currency
@@ -217,34 +173,4 @@ A string representation of Money
 -}
 toString : Money -> String
 toString = Internal.stringFromMoney
-
-
-{-|
-
-Return the value of an account at a given time.
-
--}
-value : BankTime -> Account -> Value
-value  = Internal.value
-
-
-{-|
-
-Credit an account with a given amount of money at a given time, simplify the result.
-
-
---}
-credit : BankTime -> Money -> Account -> Account
-credit = Internal.credit
-
-{-|
-
-
-Debit an account with a given amount of money at a given time, simplify the result.
-
-
-
--}
-debit : BankTime -> Money -> Account -> Account
-debit = Internal.debit
 
