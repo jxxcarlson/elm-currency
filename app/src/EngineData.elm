@@ -12,7 +12,8 @@ import Entity exposing(Entity(..), TEntity(..)
 
 import CellGrid exposing(Position)
 import Color exposing(Color)
-import Money exposing(Account)
+import Money
+import Account exposing(Account)
 import Random
 
 type alias Config = {
@@ -56,8 +57,8 @@ supplier : Entity
 supplier = Entity
    { name = "X"
    , entityType = TSupplier
-   , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount fiatCurrency
+   , complementaryAccount = Account.empty cambiatus
+   , fiatAccount = Account.empty fiatCurrency
    , inventory = []
    , position = Position (config.gridWidth - 5) (config.gridWidth - 5) -- Position (config.gridWidth - 5) (config.gridWidth - 5)
    , color = Color.rgb 0.4 0.4 1
@@ -69,8 +70,8 @@ business1 : Entity
 business1 = Entity
    { name = "A"
    , entityType = TShop
-   , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount fiatCurrency
+   , complementaryAccount = Account.empty cambiatus
+   , fiatAccount = Account.empty fiatCurrency
    , inventory = []
    , position = Position 5(config.gridWidth - 5)
    , color = Color.rgb 0.8 0 0.3
@@ -93,8 +94,8 @@ initialHousehold =
   Entity
   { name = "1"
    , entityType = THousehold
-   , complementaryAccount = Money.emptyAccount cambiatus
-   , fiatAccount = Money.emptyAccount fiatCurrency
+   , complementaryAccount = Account.empty cambiatus
+   , fiatAccount = Account.empty fiatCurrency
    , inventory = []
    , position = Position 20 15
    , color = Color.rgb 0.8 0.8 0.6

@@ -1,7 +1,7 @@
 module Internal.Account exposing (..)
 
 
-import Internal.Money as Money exposing(BankTime, Currency, Money, Cents, Value)
+import Internal.Money as Money exposing(BankTime, Currency, Money, Cents(..), Value(..))
 import Internal.Utility as Utility
 import Maybe.Extra
 

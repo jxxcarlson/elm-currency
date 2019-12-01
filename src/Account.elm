@@ -4,7 +4,7 @@ import Internal.Money exposing(Money, Currency, Value, BankTime)
 
 import Internal.Account exposing(Account)
 
-
+type alias Account = Internal.Account.Account
 
 {-|
 
@@ -31,8 +31,8 @@ createAccountWithCurrency : Currency -> List Money -> Account
 createAccountWithCurrency = Internal.Account.createAccountWithCurrency
 
 {-| Create an account ofr the given currency with empty transaction list -}
-emptyAccount : Currency -> Account
-emptyAccount = Internal.Account.emptyAccount
+empty : Currency -> Account
+empty = Internal.Account.emptyAccount
 
 {-|
 

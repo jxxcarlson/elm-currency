@@ -33,7 +33,8 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
 
 import CellGrid exposing(Position)
 import Color exposing(Color)
-import Money exposing(Account)
+import Money
+import Account exposing(Account)
 
 
 
@@ -43,10 +44,10 @@ fiatHoldingsOEntities t list =
   let
     mergedAccounts = list
       |> List.map getFiatAccount
-      |> Money.mergeAccounts
+      |> Account.mergeAccounts
   in
     case mergedAccounts of
-        Just accounts -> Just (Money.value (Money.bankTime t) accounts)
+        Just accounts -> Just <| Account.value (Money.bankTime t) accounts
         Nothing -> Nothing
 
 type Entity = Entity Common Characteristics
@@ -76,7 +77,7 @@ distance : Entity -> Entity -> Float
 distance (Entity common1 _)  (Entity common2 _)=
    positionDistance common1.position common2.position
 
-getFiatAccount : Entity -> Money.Account
+getFiatAccount : Entity -> Account
 getFiatAccount (Entity common _) =
     common.fiatAccount
 
@@ -84,7 +85,7 @@ setFiatAccount : Account -> Entity -> Entity
 setFiatAccount account (Entity common char) =
     Entity { common | fiatAccount = account} char
 
-getCCAccount : Entity -> Money.Account
+getCCAccount : Entity -> Account
 getCCAccount (Entity common _) =
     common.complementaryAccount
 

@@ -321,6 +321,17 @@ isValid (BankTime currentTime) (Money m) =
 
 -- CONVERSIONS --
 
+valueInCents_ : List Money -> Cents
+valueInCents_ list  =
+  case list of
+      [] -> (Cents 0)
+      _ ->
+         list
+            |> List.map amount
+            |> List.map (\(Cents k) -> k)
+            |> List.sum
+            |> (\s -> Cents s)
+
 
 
 

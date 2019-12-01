@@ -5,6 +5,7 @@ import EngineData
 import Random
 import Random.List
 import Money
+import Account
 import Html exposing (Html)
 import Color exposing(Color)
 import CellGrid exposing(CellGrid, Dimensions)
@@ -153,7 +154,7 @@ creditHousehold t value entity =
     let
         currency = Money.createFiatCurrency EngineData.config.fiatCurrencyName
         money = Money.createInfinite currency 0 EngineData.config.monthlyFiatIncome
-        account = Money.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
+        account = Account.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
     in
         Entity.setFiatAccount account entity
 

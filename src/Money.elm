@@ -5,17 +5,13 @@ module Money exposing(
    , BankTime
    , Expiration
    , Currency
-   , Account
    , toString
    , bankTime
    , createValue
-   , emptyAccount
-   , mergeAccounts
    , createInfinite
    , createFinite
    , createCompCurrency
    , createFiatCurrency
-   , createAccountWithCurrency
    , valueToString
    )
 
@@ -51,19 +47,7 @@ import Internal.Money as Internal exposing(
   , BankTime
   , Expiration
   , Currency
-  , CurrencyType(..)
-  , value
-  , credit
-  , debit
-  , bankTime
-  , createInfinite
-  , createFinite
-  , valueToString
-  , createCompCurrency
-  , createFiatCurrency
-  , createAccountWithCurrency
-  , emptyAccount
-  , greenBucks)
+  , CurrencyType(..))
 
 {-| Money is the fundamental type of this module.
 A value of type Money has an amount, a type (Fiat or Complementary).
