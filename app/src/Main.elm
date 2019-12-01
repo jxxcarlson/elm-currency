@@ -17,6 +17,7 @@ import Engine
 import EngineData
 import CellGrid.Render
 import Money
+import State exposing(State)
 import Time
 import Style
 import String.Interpolate exposing(interpolate)
@@ -36,7 +37,7 @@ type alias Model =
     { input : String
     , output : String
     , counter : Int
-    , state : Engine.State
+    , state : State
     }
 
 
