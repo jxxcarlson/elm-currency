@@ -39,17 +39,6 @@ import Account exposing(Account)
 
 
 
-fiatHoldingsOEntities : Int -> List Entity -> Maybe Money.Value
-fiatHoldingsOEntities t list =
-  let
-    mergedAccounts = list
-      |> List.map getFiatAccount
-      |> Account.mergeAccounts
-  in
-    case mergedAccounts of
-        Just accounts -> Just <| Account.value (Money.bankTime t) accounts
-        Nothing -> Nothing
-
 type Entity = Entity Common Characteristics
 
 
@@ -62,6 +51,46 @@ type alias Common = {
     , position : Position
     , color : Color
    }
+
+
+type alias Item = { itemType : ItemType, quantity : Quantity}
+
+type ItemType = ItemType {
+    itemName : ItemName
+  , price : Money.Value
+  }
+
+type ItemName = AA | BB
+
+type Quantity = Z Int | R Float
+
+
+type TEntity = TShop | TSupplier | THousehold
+
+type Characteristics =
+    BusinessCharacteristics BusinessCharRecord | HouseholdCharacteristics HouseholdCharRecord
+
+type alias BusinessCharRecord =
+   {
+      radius: Float
+
+   }
+
+type alias HouseholdCharRecord = {
+  monthlyConsumptionA : Int
+ }
+
+
+fiatHoldingsOEntities : Int -> List Entity -> Maybe Money.Value
+fiatHoldingsOEntities t list =
+  let
+    mergedAccounts = list
+      |> List.map getFiatAccount
+      |> Account.mergeAccounts
+  in
+    case mergedAccounts of
+        Just accounts -> Just <| Account.value (Money.bankTime t) accounts
+        Nothing -> Nothing
 
 
 positionDistance : Position -> Position -> Float
@@ -120,33 +149,6 @@ getColor (Entity common characteristics) =
 setColor : Float -> Float -> Float ->  Entity -> Entity
 setColor r g b (Entity common characteristics) =
     Entity { common | color = Color.rgb r g b } characteristics
-
-type alias Item = { itemType : ItemType, quantity : Quantity}
-
-type ItemType = ItemType {
-    itemName : ItemName
-  , price : Money.Value
-  }
-
-type ItemName = AA | BB
-
-type Quantity = Z Int | R Float
-
-
-type TEntity = TShop | TSupplier | THousehold
-
-type Characteristics =
-    BusinessCharacteristics BusinessCharRecord | HouseholdCharacteristics HouseholdCharRecord
-
-type alias BusinessCharRecord =
-   {
-      radius: Float
-
-   }
-
-type alias HouseholdCharRecord = {
-  monthlyConsumptionA : Int
- }
 
 
 inventorySize : Entity -> Int

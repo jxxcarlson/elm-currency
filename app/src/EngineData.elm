@@ -1,4 +1,4 @@
-module EngineData exposing (businesses, config, generateHouseholds)
+module EngineData exposing (businesses, config, generateHouseholds, supplier, business1, business2, initialHousehold)
 
 import Entity exposing(Entity(..), TEntity(..)
   ,  ItemType(..), ItemName(..)
@@ -73,7 +73,7 @@ business1 = Entity
    , complementaryAccount = Account.empty cambiatus
    , fiatAccount = Account.empty fiatCurrency
    , inventory = []
-   , position = Position 5(config.gridWidth - 5)
+   , position = Position 8 (config.gridWidth - 5)
    , color = Color.rgb 0.8 0 0.3
   }
   (BusinessCharacteristics { radius = config.businessRadius })
