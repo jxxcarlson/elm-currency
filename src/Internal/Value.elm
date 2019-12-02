@@ -1,6 +1,5 @@
 module Internal.Value exposing (..)
 
-
 import Internal.Types exposing(Value(..), Cents(..), Currency(..))
 import Internal.Cents as Cents
 
@@ -15,7 +14,7 @@ map2 f (Value curr1 cents1)  (Value curr2 cents2)=
         False -> Nothing
 
 
-{-}
+{-|
     import Internal.Types exposing(Value(..), Cents(..))
 
     v1 : Value
@@ -39,7 +38,7 @@ add : Value -> Value -> Maybe Value
 add a b =
     map2 Cents.add a b
 
-{-}
+{-|
     import Internal.Types exposing(Value(..), Cents(..))
 
     v1 : Value
