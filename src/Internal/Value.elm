@@ -8,9 +8,25 @@ map : (Cents -> Cents) -> Value -> Value
 map f (Value curr cents) =
     (Value curr (f cents))
 
+
+{-|
+
+    import Internal.Types exposing(..)
+    import Internal.Money as Money
+
+    v : Value
+    v = Value Money.usDollars (Cents 200)
+
+    imap (\k (Cents c) -> (Cents (k * c))) 2 v
+    --> Just <| Value Money.usDollars (Cents 400)
+
+-}
+imap : (Int -> Cents -> Cents) -> Int -> Value -> Value
+imap f k (Value curr c) =
+    Value curr (f k c)
+
 map2 : (Cents -> Cents -> Cents ) -> Value -> Value -> Maybe Value
-map2 f (Value curr1 cents1)  (Value curr2 cents2)=
-    case curr1 == curr2 of
+map2 f (Value curr1 curr2  of
         True ->  Just (Value curr1 (f cents1 cents2))
         False -> Nothing
 
@@ -33,7 +49,7 @@ map2E f (Value curr1 cents1)  (Value curr2 cents2)=
     v3 = Value Money.greenBucks (Cents 100)
 
     add v1 v2
-    -- Just <| Value (Cents 300)
+    --> Just <| Value Money.usDollars (Cents 300)
 
     add v1 v3
     --> Nothing

@@ -7,6 +7,17 @@ map : (Int -> Int) -> Cents -> Cents
 map f (Cents k) =
     Cents (f k)
 
+{-|
+
+    import Internal.Types exposing(Cents(..))
+
+    imap (\k c -> k * c) 2 (Cents 3)
+    --> Cents 6
+-}
+imap : (Int -> Int -> Int) -> Int -> Cents -> Cents
+imap f k (Cents c) =
+   Cents (f k c)
+
 map2 : (Int -> Int -> Int) -> Cents -> Cents -> Cents
 map2 f (Cents m) (Cents n) =
     Cents (f m n)

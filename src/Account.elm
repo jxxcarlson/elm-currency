@@ -1,5 +1,7 @@
 module Account exposing (
-     createWithCurrency
+    Account
+    , createWithCurrency
+   , currency
    , empty
    , value
    , debit
@@ -40,7 +42,13 @@ createWithCurrency = Internal.Account.createWithCurrency
 empty : Currency -> Account
 empty = Internal.Account.empty
 
-{-|
+
+{-| Return the currency used in the account.
+
+-}
+currency : Account -> Currency
+currency = Internal.Account.currency
+
 
 Return the value of an account at a given time.
 

@@ -13,6 +13,7 @@ module Money exposing(
    , createCompCurrency
    , createFiatCurrency
    , currency
+   , value
    , valueToString
    )
 
@@ -165,4 +166,7 @@ toString = Money.stringFromMoney
 
 currency : Money -> Currency
 currency = Money.currency
+
+value : BankTime -> Money -> Value
+value = Money.value
 

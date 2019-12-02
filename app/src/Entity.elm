@@ -3,6 +3,8 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , HouseholdCharRecord
   , Item
   , TEntity(..)
+  , complementaryAccount
+  , fiatAccount
   , getPosition
   , distance
   , getFiatAccount
@@ -15,6 +17,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , setName
   , setPosition
   , getColor
+  , selectAccount
   , setColor)
 
 {-|
@@ -32,7 +35,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
 
 import CellGrid exposing(Position)
 import Color exposing(Color)
-import Money
+import Money exposing(Money)
 import Account exposing(Account)
 
 
@@ -53,6 +56,19 @@ type alias Common = {
     , color : Color
    }
 
+complementaryAccount : Entity -> Account
+complementaryAccount (Entity common _) =
+    common.complementaryAccount
+
+fiatAccount : Entity -> Account
+fiatAccount (Entity common _) =
+    common.fiatAccount
+
+selectAccount : Money -> Entity -> Maybe Account
+selectAccount money (Entity common _) =
+     if Money.currency money == Account.currency common.fiatAccount then Just <| common.fiatAccount
+             else if Money.currency money == Account.currency common.complementaryAccount then Just <|common.complementaryAccount
+             else Nothing
 
 type Item = Item {
      itemName : String

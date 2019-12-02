@@ -288,6 +288,12 @@ isValid (BankTime currentTime) (Money m) =
                       expirationTime  >=  currentTime
 
 
+value : BankTime -> Money -> Value
+value bt ((Money data) as m) =
+    case isValid bt m of
+        True -> Value data.currency data.amount
+        False -> Value data.currency (Cents 0)
+
 -- CONVERSIONS --
 
 valueInCents_ : List Money -> Cents
