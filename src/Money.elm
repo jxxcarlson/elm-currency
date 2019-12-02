@@ -40,7 +40,7 @@ module Money exposing(
 
 -}
 
-import Internal.Money as Internal exposing(
+import Internal.Types as Type exposing(
   Money
   , Value
   , Cents
@@ -48,6 +48,8 @@ import Internal.Money as Internal exposing(
   , Expiration
   , Currency
   , CurrencyType(..))
+
+import Internal.Money as Money
 
 {-| Money is the fundamental type of this module.
 A value of type Money has an amount, a type (Fiat or Complementary).
@@ -64,7 +66,7 @@ which is either Infinite or Finite BankTime
     --> "100.21 Greenbucks (C) 0:365"
 
 -}
-type alias Money = Internal.Money
+type alias Money = Type.Money
 
 
 {-| An account at a given time has a Value
@@ -85,58 +87,58 @@ type alias Money = Internal.Money
 
 
 -}
-type alias Value = Internal.Value
+type alias Value = Type.Value
 
 
 createValue : Currency -> Float -> Value
-createValue = Internal.createValue
+createValue = Money.createValue
 
 {-| Return a string representation of a Value
 
 -}
 valueToString : Value -> String
-valueToString = Internal.valueToString
+valueToString = Money.valueToString
 
 
 {-| Create a BankTime value from an Integer
 
 -}
 bankTime : Int -> BankTime
-bankTime = Internal.bankTime
+bankTime = Money.bankTime
 
 {-|  We denominate money in integer Cents so as
 to avoid round-off error.
 -}
-type alias Cents = Internal.Cents
+type alias Cents = Type.Cents
 
 
 {-| BankTime t is an abstract integer time which
 can be seconds, days, weeks, whatever
 -}
-type alias BankTime = Internal.BankTime
+type alias BankTime = Type.BankTime
 
 
 {-| A currency may be finite or infinite,
 that is, expiring or non-expiring.
 
 -}
-type alias Expiration = Internal.Expiration
+type alias Expiration = Type.Expiration
 
 
 {-| Currency can be fiat or complementary
 -}
-type alias Currency = Internal.Currency
+type alias Currency = Type.Currency
 
-type alias CurrencyType = Internal.CurrencyType
+type alias CurrencyType = Type.CurrencyType
 
 
 {-| Create a complementary currency with given name -}
 createCompCurrency :  String  -> Currency
-createCompCurrency = Internal.createCompCurrency
+createCompCurrency = Money.createCompCurrency
 
 {-| Create a fiat currency with given name -}
 createFiatCurrency :  String  -> Currency
-createFiatCurrency = Internal.createFiatCurrency
+createFiatCurrency = Money.createFiatCurrency
 
 {-| Create money with an expiration date
 
@@ -145,16 +147,16 @@ createFiatCurrency = Internal.createFiatCurrency
 
 -}
 createFinite : Currency ->  Int -> Int -> Float -> Money
-createFinite = Internal.createFinite
+createFinite = Money.createFinite
 
 {-| Create money which does not expire -}
 createInfinite : Currency ->  Int -> Float -> Money
-createInfinite = Internal.createInfinite
+createInfinite = Money.createInfinite
 
 
 {-|
 A string representation of Money
 -}
 toString : Money -> String
-toString = Internal.stringFromMoney
+toString = Money.stringFromMoney
 

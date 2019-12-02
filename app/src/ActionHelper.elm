@@ -3,7 +3,7 @@ module ActionHelper exposing (..)
 
 import Account
 import EngineData
-import Entity exposing(Entity)
+import Entity exposing(Entity, Item)
 import Random
 import Random.List
 import Money
@@ -14,6 +14,10 @@ import State exposing(State)
 householdConsumptionStep : Int -> State -> State
 householdConsumptionStep t state =
     state
+
+
+--purchase : Item -> Entity -> Entity  -> (Entity, Entity)
+--purchase item purchaser
 
 {-|
     import TestData

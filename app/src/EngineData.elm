@@ -1,7 +1,6 @@
 module EngineData exposing (businesses, config, generateHouseholds, supplier, business1, business2, initialHousehold)
 
 import Entity exposing(Entity(..), TEntity(..)
-  ,  ItemType(..), ItemName(..)
   , Characteristics(..)
   , setName
   , setPosition

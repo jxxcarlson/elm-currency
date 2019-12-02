@@ -1,6 +1,6 @@
 module Account exposing (..)
 
-import Internal.Money exposing(Money, Currency, Value, BankTime)
+import Internal.Types exposing(Money, Currency, Value, BankTime)
 
 import Internal.Account exposing(Account)
 

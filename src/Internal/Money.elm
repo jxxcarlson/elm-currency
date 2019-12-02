@@ -7,33 +7,78 @@ module Internal.Money exposing (..)
 -}
 
 
-
+import Internal.Types exposing (Money(..), Cents(..), Value(..), BankTime(..), Expiration(..), Currency(..), CurrencyType(..))
 import List.Extra
 import String.Interpolate exposing(interpolate)
 import Internal.Utility as Utility
 
 
 
-{-| Currency is the fundamental type of this module.
-A Currency value has an amount, a type (Fiat or Complementary).
-a time at which it was issued, and an expiration period,
-which is either Infinite or Finite BankTime
 
-    c1 = {amount = Cents 123, currency = greenBucks, issueTime = 0, expiration = Finite 100 }
+
+
+mapValue : (Cents -> Cents) -> Value -> Value
+mapValue f (Value curr cents) =
+    (Value curr (f cents))
+
+mapValue2 : (Cents -> Cents -> Cents ) -> Value -> Value -> Maybe Value
+mapValue2 f (Value curr1 cents1)  (Value curr2 cents2)=
+    case curr1 == curr2 of
+        True ->  Just (Value curr1 (f cents1 cents2))
+        False -> Nothing
+
+
+{-}
+    import Internal.Types exposing(Value(..), Cents(..))
+
+    v1 : Value
+    v1 = Value usDollars (Cents 200)
+
+    v2 : Value
+    v2 = Value usDollars (Cents 100)
+
+    v3 : Value
+    v3 = Value greenBucks (Cents 100)
+
+    addValues v1 v2
+    -- Just <| Value (Cents 300)
+
+    addValues v1 v3
+    --> Nothing
+
 
 -}
-type Money =
-    Money { amount : Cents
-    , currency : Currency
-    , issuedAt : BankTime
-    , expiresAt : Expiration
-    }
+subtractValues : Value -> Value -> Maybe Value
+subtractValues a b =
+    mapValue2 subtractCents a b
 
+{-}
+    import Internal.Types exposing(Value(..), Cents(..))
 
-{-| An account at a given time has a Value
+    v1 : Value
+    v1 = Value usDollars (Cents 200)
+
+    v2 : Value
+    v2 = Value usDollars (Cents 100)
+
+    v3 : Value
+    v3 = Value greenBucks (Cents 100)
+
+    addValues v1 v2
+    -- Just <| Value (Cents 100)
+
+    addValues v1 v3
+    --> Nothing
+
 
 -}
-type Value = Value Currency Cents
+addValues : Value -> Value -> Maybe Value
+addValues a b =
+    mapValue2 addCents a b
+
+
+--gtValue : Value -> Value -> Maybe Bool
+--gtValue a b =
 
 
 createValue : Currency -> Float -> Value
@@ -41,31 +86,64 @@ createValue currency_ amount_ =
     Value currency_ (Cents (round (amount_/100.0)))
 
 
-{-|  We denominate money in integer Cents so as
-to avoid round-off error.
+
+
+mapCents : (Int -> Int) -> Cents -> Cents
+mapCents f (Cents k) =
+    Cents (f k)
+
+mapCents2 : (Int -> Int -> Int) -> Cents -> Cents -> Cents
+mapCents2 f (Cents m) (Cents n) =
+    Cents (f m n)
+
+mapCents2E : (Int -> Int -> a) -> Cents -> Cents -> a
+mapCents2E f (Cents m) (Cents n) =
+   f m n
+{-|
+
+    import Internal.Types exposing(Cents(..))
+
+  addCents 2 3
+  --> Cents 5
+
+
 -}
-type Cents = Cents Int
+addCents : Cents -> Cents -> Cents
+addCents a b =
+    mapCents2 (+) a b
 
 
-{-| BankTime t is an abstract integer time which
-can be seconds, days, weeks, whatever
+{-|
+
+    import Internal.Types exposing(Cents(..))
+
+    negateCents (Cents 3)
+    --> Cents -3
+
 -}
-type BankTime = BankTime Int
+negateCents : Cents -> Cents
+negateCents cents =
+    mapCents (\k -> -k) cents
 
+{-|
+    import Internal.Types exposing(Cents(..))
 
-{-| A currency may be finite or infinite,
-that is, expiring or non-expiring.
+    subtractCents (Cents 3) (Cents 1)
+    --> Cents 2
 
 -}
-type Expiration = Infinite | Finite BankTime
+subtractCents : Cents -> Cents -> Cents
+subtractCents a b =
+    mapCents2 (-) a b
 
 
-{-| Currency can be fiat or complementary
--}
-type Currency = Currency CurrencyType String
+gtCents : Cents -> Cents -> Bool
+gtCents a b =
+    mapCents2E (>) a b
 
-type CurrencyType = Fiat | Complementary
-
+gteCents : Cents -> Cents -> Bool
+gteCents a b =
+    mapCents2E (>=) a b
 
 bankTime : Int -> BankTime
 bankTime t = BankTime t
@@ -83,6 +161,12 @@ createFiatCurrency name = Currency Fiat  name
 
 greenBucks : Currency
 greenBucks = createCompCurrency "Greenbucks"
+
+redBucks : Currency
+redBucks = createCompCurrency "Redbucks"
+
+usDollars : Currency
+usDollars = createFiatCurrency "USDollars"
 
 createFinite : Currency ->  Int -> Int -> Float -> Money
 createFinite currency_ issuedAt_ expiresAt_ amount_ =
@@ -103,6 +187,8 @@ createInfinite currency_ issuedAt_  amount_ =
     }
 
 {-|
+
+    import Internal.Types exposing(..)
 
     sameCurrency []
     --> False
@@ -166,6 +252,8 @@ sameExpiration a b =
     expiresAt a == expiresAt b
 {-|
 
+    import Internal.Types exposing(..)
+
     stringFromMoney <| Money  {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> "1.23 Greenbucks (C) 0:100"
 
@@ -190,6 +278,8 @@ stringFromMoney (Money m) =
 
 {-|
 
+    import Internal.Types exposing(..)
+
     c1 : Money
     c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
@@ -200,10 +290,10 @@ negate : Money -> Money
 negate (Money m) =
     Money {m | amount = negateCents m.amount}
 
-negateCents : Cents -> Cents
-negateCents (Cents k) = (Cents (-k))
 
 {-|
+    import Internal.Types exposing(..)
+
 
     c1 : Money
     c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
@@ -228,6 +318,8 @@ samePeriod a b =
     issuedAt a == issuedAt b && expiresAt a == expiresAt b
 
 {-|
+    import Internal.Types exposing(..)
+
     c1 : Money
     c1 =  Money {amount = Cents 100, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
@@ -260,6 +352,8 @@ same period ahd are of the same currency.
 It should only be called by functions that
 establish these conditions.
 
+    import Internal.Types exposing(Money(..), BankTime(..), Cents(..), Expiration(..))
+
     c1 : Money
     c1 =  Money {amount = Cents 100, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
@@ -285,6 +379,8 @@ consolidate list =
 -- OPERATIONS AND FUNCTIONS --
 
 {-|
+
+    import Internal.Types exposing(Money(..), Cents(..), BankTime(..), Expiration(..))
 
     isValid (BankTime -1)  <| Money  {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
     --> False
@@ -340,6 +436,7 @@ valueToString (Value currency_ cents) =
     interpolate "{1} {0}" [stringFromCurrency currency_, stringFromCents cents]
 
 {-|
+    import Internal.Types exposing(Cents(..))
 
     stringFromCents (Cents 123)
     --> "1.23"
@@ -351,6 +448,8 @@ stringFromCents cents =
 
 
 {-|
+
+    import Internal.Types exposing(Cents(..))
 
     floatFromCents (Cents 123) |> String.fromFloat
     --> "1.23"

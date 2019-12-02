@@ -1,8 +1,7 @@
 module Entity exposing (Entity(..), Common, Characteristics(..)
   , BusinessCharRecord
   , HouseholdCharRecord
-  , ItemType(..)
-  , ItemName(..)
+  , Item
   , TEntity(..)
   , getPosition
   , distance
@@ -42,6 +41,8 @@ import Account exposing(Account)
 type Entity = Entity Common Characteristics
 
 
+
+
 type alias Common = {
       name:  String
     , entityType : TEntity
@@ -53,16 +54,11 @@ type alias Common = {
    }
 
 
-type alias Item = { itemType : ItemType, quantity : Quantity}
+type Item = Item {
+     itemName : String
+   , price : Money.Value
+   , quantity : Int}
 
-type ItemType = ItemType {
-    itemName : ItemName
-  , price : Money.Value
-  }
-
-type ItemName = AA | BB
-
-type Quantity = Z Int | R Float
 
 
 type TEntity = TShop | TSupplier | THousehold
