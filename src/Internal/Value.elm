@@ -1,5 +1,6 @@
 module Internal.Value exposing (..)
 
+
 import Internal.Types exposing(Value(..), Cents(..), Currency(..))
 import Internal.Cents as Cents
 
@@ -13,18 +14,23 @@ map2 f (Value curr1 cents1)  (Value curr2 cents2)=
         True ->  Just (Value curr1 (f cents1 cents2))
         False -> Nothing
 
-
+map2E : (Cents -> Cents -> a ) -> Value -> Value -> Maybe a
+map2E f (Value curr1 cents1)  (Value curr2 cents2)=
+    case curr1 == curr2 of
+        True ->  Just (f cents1 cents2)
+        False -> Nothing
 {-|
     import Internal.Types exposing(Value(..), Cents(..))
+    import Internal.Money as Money
 
     v1 : Value
-    v1 = Value usDollars (Cents 200)
+    v1 = Value Money.usDollars (Cents 200)
 
     v2 : Value
-    v2 = Value usDollars (Cents 100)
+    v2 = Value Money.usDollars (Cents 100)
 
     v3 : Value
-    v3 = Value greenBucks (Cents 100)
+    v3 = Value Money.greenBucks (Cents 100)
 
     add v1 v2
     -- Just <| Value (Cents 300)
@@ -40,15 +46,16 @@ add a b =
 
 {-|
     import Internal.Types exposing(Value(..), Cents(..))
+    import Internal.Money as Money
 
     v1 : Value
-    v1 = Value usDollars (Cents 200)
+    v1 = Value Money.usDollars (Cents 200)
 
     v2 : Value
-    v2 = Value usDollars (Cents 100)
+    v2 = Value Money.usDollars (Cents 100)
 
     v3 : Value
-    v3 = Value greenBucks (Cents 100)
+    v3 = Value Money.greenBucks (Cents 100)
 
     subtract v1 v2
     -- Just <| Value (Cents 100)
@@ -63,9 +70,37 @@ subtract a b =
     map2 Cents.subtract a b
 
 
+{-|
+    import Internal.Types exposing(Value(..), Cents(..))
+    import Internal.Money as Money
 
---gtValue : Value -> Value -> Maybe Bool
---gtValue a b =
+    v1 : Value
+    v1 = Value Money.usDollars (Cents 200)
+
+    v2 : Value
+    v2 = Value Money.usDollars (Cents 100)
+
+    v3 : Value
+    v3 = Value Money.greenBucks (Cents 100)
+
+    gt v1 v2
+    -- Just Tue
+
+    gt v1 v1
+    -- Just False
+
+    gt v2 v1
+    -- Just False
+
+    gt v1 v3
+    --> Nothing
+
+
+-}
+gt : Value -> Value -> Maybe Bool
+gt a b =
+    map2E Cents.gte a b
+
 
 
 create : Currency -> Float -> Value
