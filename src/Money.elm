@@ -12,6 +12,7 @@ module Money exposing(
    , createFinite
    , createCompCurrency
    , createFiatCurrency
+   , currency
    , valueToString
    )
 
@@ -160,4 +161,8 @@ A string representation of Money
 -}
 toString : Money -> String
 toString = Money.stringFromMoney
+
+
+currency : Money -> Currency
+currency = Money.currency
 

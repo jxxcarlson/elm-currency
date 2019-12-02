@@ -1,4 +1,10 @@
-module Account exposing (..)
+module Account exposing (
+     createWithCurrency
+   , empty
+   , value
+   , debit
+   , credit
+   , merge)
 
 import Internal.Types exposing(Money, Currency, Value, BankTime)
 
@@ -27,12 +33,12 @@ type alias Account = Internal.Account.Account
 
 
 -}
-createAccountWithCurrency : Currency -> List Money -> Account
-createAccountWithCurrency = Internal.Account.createAccountWithCurrency
+createWithCurrency : Currency -> List Money -> Account
+createWithCurrency = Internal.Account.createWithCurrency
 
 {-| Create an account ofr the given currency with empty transaction list -}
 empty : Currency -> Account
-empty = Internal.Account.emptyAccount
+empty = Internal.Account.empty
 
 {-|
 
@@ -75,7 +81,7 @@ by the functions which operate on accounts.
 -}
 
 
-mergeAccounts : List Account -> Maybe Account
-mergeAccounts = Internal.Account.mergeAccounts
+merge : List Account -> Maybe Account
+merge = Internal.Account.merge
 
 

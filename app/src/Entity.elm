@@ -82,7 +82,7 @@ fiatHoldingsOEntities t list =
   let
     mergedAccounts = list
       |> List.map getFiatAccount
-      |> Account.mergeAccounts
+      |> Account.merge
   in
     case mergedAccounts of
         Just accounts -> Just <| Account.value (Money.bankTime t) accounts

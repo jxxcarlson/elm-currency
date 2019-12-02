@@ -102,6 +102,36 @@ gt a b =
     map2E Cents.gte a b
 
 
+{-|
+    import Internal.Types exposing(Value(..), Cents(..))
+    import Internal.Money as Money
+
+    v1 : Value
+    v1 = Value Money.usDollars (Cents 200)
+
+    v2 : Value
+    v2 = Value Money.usDollars (Cents 100)
+
+    v3 : Value
+    v3 = Value Money.greenBucks (Cents 100)
+
+    gte v1 v2
+    -- Just Tue
+
+    gte v1 v1
+    -- Just True
+
+    gte v2 v1
+    -- Just False
+
+    gte v1 v3
+    --> Nothing
+
+
+-}
+gte : Value -> Value -> Maybe Bool
+gte a b =
+    map2E Cents.gt a b
 
 create : Currency -> Float -> Value
 create currency_ amount_ =

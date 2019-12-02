@@ -16,34 +16,37 @@ by the functions which operate on accounts.
 type  Account =
       Account  { currency: Currency, transactions : List Money }
 
-mergeAccounts : List Account -> Maybe Account
-mergeAccounts list =
-    case (Maybe.map getAccountCurrency (List.head list)) of
+merge : List Account -> Maybe Account
+merge list =
+    case (Maybe.map currency (List.head list)) of
         Just currency_ ->
-            Just <| Account { currency = currency_, transactions = List.concat (List.map getTransactions list) }
+            Just <| Account { currency = currency_, transactions = List.concat (List.map transactions list) }
         Nothing -> Nothing
 
 
-getAccountCurrency : Account -> Currency
-getAccountCurrency (Account data) =
+currency : Account -> Currency
+currency (Account data) =
     data.currency
 
-getTransactions : Account -> List Money
-getTransactions (Account data) =
+transactions : Account -> List Money
+transactions (Account data) =
     data.transactions
 
 
 {-|
 
-    m1 : Money
-    m1 = createFinite greenBucks 0 365 100.21
+    import Internal.Types exposing(..)
+    import Internal.Money
 
-    createAccount [m1, m1]
-    --> Just <| Account { currency = greenBucks, transactions = [m1, m1] }
+    m1 : Money
+    m1 = Internal.Money.createFinite Internal.Money.greenBucks 0 365 100.21
+
+    create [m1, m1]
+    --> Just <| Account { currency = Internal.Money.greenBucks, transactions = [m1, m1] }
 
 -}
-createAccount : List Money -> Maybe Account
-createAccount list =
+create : List Money -> Maybe Account
+create list =
    case List.head list of
        Nothing -> Nothing
        Just m ->
@@ -56,61 +59,68 @@ createAccount list =
 
 {-|
 
+    import Internal.Types exposing(..)
+    import Internal.Money
+
     m1 : Money
-    m1 = createFinite greenBucks 0 365 100.21
+    m1 = Internal.Money.createFinite Internal.Money.greenBucks 0 365 100.21
 
-    createAccountWithCurrency greenBucks []
-    --> emptyAccount greenBucks
+    createWithCurrency Internal.Money.greenBucks []
+    --> empty Internal.Money.greenBucks
 
-    createAccountWithCurrency greenBucks [m1]
-    --> Account { currency = greenBucks, transactions = [m1] }
+    createWithCurrency Internal.Money.greenBucks [m1]
+    --> Account { currency = Internal.Money.greenBucks, transactions = [m1] }
 
-    createAccountWithCurrency greenBucks [m1] |> value (bankTime 0) |> valueToString
+    createWithCurrency Internal.Money.greenBucks [m1] |> value (Internal.Money.bankTime 0) |> Internal.Money.valueToString
     --> "100.21 Greenbucks (C)"
 
-    createAccountWithCurrency greenBucks [m1] |> value (bankTime -1) |> valueToString
+    createWithCurrency Internal.Money.greenBucks [m1] |> value (Internal.Money.bankTime -1) |> Internal.Money.valueToString
     --> "0 Greenbucks (C)"
 
-    createAccountWithCurrency greenBucks [m1] |> value (bankTime 366) |> valueToString
+    createWithCurrency Internal.Money.greenBucks [m1] |> value (Internal.Money.bankTime 366) |> Internal.Money.valueToString
     --> "0 Greenbucks (C)"
 -}
-createAccountWithCurrency : Currency -> List Money -> Account
-createAccountWithCurrency currency_ list =
+createWithCurrency : Currency -> List Money -> Account
+createWithCurrency currency_ list =
     let
        currencies = List.map Money.currency list
      in
      case Utility.andOfList (List.map (\c -> c == currency_) currencies) of
          True -> Account {currency = currency_, transactions = list}
-         False -> emptyAccount currency_
+         False -> empty currency_
 
 
 
-emptyAccount : Currency -> Account
-emptyAccount currency_ =
+empty : Currency -> Account
+empty currency_ =
     Account {currency = currency_, transactions = []}
 
 
 {-|
+
+    import Internal.Types exposing(..)
+    import Internal.Money
+
     c1 : Money
-    c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 123, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     acct : Account
-    acct = Account  { currency = greenBucks, transactions = [c1]}
+    acct = Account  { currency = Internal.Money.greenBucks, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account  { currency = greenBucks, transactions = [c1,c1]}
+    acct2 = Account  { currency = Internal.Money.greenBucks, transactions = [c1,c1]}
 
     value (BankTime 10) acct
-    --> Value (greenBucks) (Cents 123)
+    --> Value (Internal.Money.greenBucks) (Cents 123)
 
     value (BankTime 101) acct
-    --> Value (greenBucks) (Cents 0)
+    --> Value (Internal.Money.greenBucks) (Cents 0)
 
     value (BankTime -1) acct
-    --> Value (greenBucks) (Cents 0)
+    --> Value (Internal.Money.greenBucks) (Cents 0)
 
     value (BankTime 10) acct2
-    --> Value (greenBucks) (Cents 246)
+    --> Value (Internal.Money.greenBucks) (Cents 246)
 
 -}
 value : BankTime -> Account -> Value
@@ -122,18 +132,21 @@ value  bankTime_ ((Account acct) as account)=
 
 
 {-|
+    import Internal.Types exposing(..)
+    import Internal.Money
+
 
     c1 : Money
-    c1 =  Money {amount = Cents 100, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 100, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     c2 : Money
-    c2 =  Money {amount = Cents 200, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c2 =  Money {amount = Cents 200, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     acct : Account
-    acct = Account {currency = greenBucks, transactions = [c1]}
+    acct = Account {currency = Internal.Money.greenBucks, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account {currency = greenBucks, transactions = [c2]}
+    acct2 = Account {currency = Internal.Money.greenBucks, transactions = [c2]}
 
     credit (BankTime 0) c1 acct
     --> acct2
@@ -144,17 +157,20 @@ credit bt m (Account acct) =
 
 {-|
 
+    import Internal.Types exposing(..)
+    import Internal.Money
+
     c1 : Money
-    c1 =  Money {amount = Cents 100, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 100, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     c2 : Money
-    c2 =  Money {amount = Cents 0, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c2 =  Money {amount = Cents 0, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     acct : Account
-    acct = Account {currency = greenBucks, transactions = [c1]}
+    acct = Account {currency = Internal.Money.greenBucks, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account {currency = greenBucks, transactions = [c2]}
+    acct2 = Account {currency = Internal.Money.greenBucks, transactions = [c2]}
 
     debit (BankTime 0) c1 acct
     --> acct2
@@ -167,49 +183,55 @@ debit bt m (Account acct) =
 
 {-|
 
+    import Internal.Types exposing(..)
+    import Internal.Money
+
     c1 : Money
-    c1 =  Money {amount = Cents 100, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 100, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     c2 : Money
-    c2 =  Money {amount = Cents 200, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c2 =  Money {amount = Cents 200, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     c3 : Money
-    c3 =  Money {amount = Cents 300, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c3 =  Money {amount = Cents 300, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
 
     c4 : Money
-    c4 =  Money {amount = Cents 10, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Infinite }
+    c4 =  Money {amount = Cents 10, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Infinite }
 
     acct : Account
-    acct = Account {currency = greenBucks, transactions = [c1,c2]}
+    acct = Account {currency = Internal.Money.greenBucks, transactions = [c1,c2]}
 
     simplify (BankTime 0) acct
-    --> Account {currency = greenBucks, transactions = [c3]}
+    --> Account {currency = Internal.Money.greenBucks, transactions = [c3]}
 
-    simplify (BankTime 0) (Account {currency = greenBucks, transactions = [c1,c2, c4]})
-    --> Account {currency = greenBucks, transactions = [c3, c4]}
+    simplify (BankTime 0) (Account {currency = Internal.Money.greenBucks, transactions = [c1,c2, c4]})
+    --> Account {currency = Internal.Money.greenBucks, transactions = [c3, c4]}
 -}
 simplify : BankTime -> Account -> Account
 simplify bt ((Account acct) as account) =
    let
        (Account acct2) = ensureValid bt account
        groups = Money.group acct2.transactions
-       transactions = List.map Money.consolidate groups
+       transactions_ = List.map Money.consolidate groups
          |> Maybe.Extra.values
    in
-     Account {currency = acct.currency, transactions = transactions}
+     Account {currency = acct.currency, transactions = transactions_}
 
 
 
 {-|
+    import Internal.Types exposing(..)
+    import Internal.Money
+
    c1 : Money
-   c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+   c1 =  Money {amount = Cents 123, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
    emptyAcct : Account
-   emptyAcct = Account  { currency = greenBucks, transactions = []}
+   emptyAcct = Account  { currency = Internal.Money.greenBucks, transactions = []}
 
    acct : Account
-   acct = Account  { currency = greenBucks, transactions = [c1]})
+   acct = Account  { currency = Internal.Money.greenBucks, transactions = [c1]})
 
    ensureValid (BankTime 10) acct
    --> acct
@@ -228,17 +250,20 @@ ensureValid bankTime_ (Account acct) =
 
 {-|
 
+    import Internal.Types exposing(..)
+    import Internal.Money
+
     c1 : Money
-    c1 =  Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+    c1 =  Money {amount = Cents 123, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
     emptyAcct : Account
-    emptyAcct = Account{ currency = greenBucks, transactions = []}
+    emptyAcct = Account{ currency = Internal.Money.greenBucks, transactions = []}
 
     acct : Account
-    acct = Account  { currency = greenBucks, transactions = [c1]}
+    acct = Account  { currency = Internal.Money.greenBucks, transactions = [c1]}
 
     acct2 : Account
-    acct2 = Account  { currency = greenBucks, transactions = [c1, c1]}
+    acct2 = Account  { currency = Internal.Money.greenBucks, transactions = [c1, c1]}
 
     valueInCents emptyAcct
     --> (Cents 0)
