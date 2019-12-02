@@ -11,139 +11,12 @@ import Internal.Types exposing (Money(..), Cents(..), Value(..), BankTime(..), E
 import List.Extra
 import String.Interpolate exposing(interpolate)
 import Internal.Utility as Utility
+import Internal.Cents as Cents
 
 
 
 
 
-
-mapValue : (Cents -> Cents) -> Value -> Value
-mapValue f (Value curr cents) =
-    (Value curr (f cents))
-
-mapValue2 : (Cents -> Cents -> Cents ) -> Value -> Value -> Maybe Value
-mapValue2 f (Value curr1 cents1)  (Value curr2 cents2)=
-    case curr1 == curr2 of
-        True ->  Just (Value curr1 (f cents1 cents2))
-        False -> Nothing
-
-
-{-}
-    import Internal.Types exposing(Value(..), Cents(..))
-
-    v1 : Value
-    v1 = Value usDollars (Cents 200)
-
-    v2 : Value
-    v2 = Value usDollars (Cents 100)
-
-    v3 : Value
-    v3 = Value greenBucks (Cents 100)
-
-    addValues v1 v2
-    -- Just <| Value (Cents 300)
-
-    addValues v1 v3
-    --> Nothing
-
-
--}
-subtractValues : Value -> Value -> Maybe Value
-subtractValues a b =
-    mapValue2 subtractCents a b
-
-{-}
-    import Internal.Types exposing(Value(..), Cents(..))
-
-    v1 : Value
-    v1 = Value usDollars (Cents 200)
-
-    v2 : Value
-    v2 = Value usDollars (Cents 100)
-
-    v3 : Value
-    v3 = Value greenBucks (Cents 100)
-
-    addValues v1 v2
-    -- Just <| Value (Cents 100)
-
-    addValues v1 v3
-    --> Nothing
-
-
--}
-addValues : Value -> Value -> Maybe Value
-addValues a b =
-    mapValue2 addCents a b
-
-
---gtValue : Value -> Value -> Maybe Bool
---gtValue a b =
-
-
-createValue : Currency -> Float -> Value
-createValue currency_ amount_ =
-    Value currency_ (Cents (round (amount_/100.0)))
-
-
-
-
-mapCents : (Int -> Int) -> Cents -> Cents
-mapCents f (Cents k) =
-    Cents (f k)
-
-mapCents2 : (Int -> Int -> Int) -> Cents -> Cents -> Cents
-mapCents2 f (Cents m) (Cents n) =
-    Cents (f m n)
-
-mapCents2E : (Int -> Int -> a) -> Cents -> Cents -> a
-mapCents2E f (Cents m) (Cents n) =
-   f m n
-{-|
-
-    import Internal.Types exposing(Cents(..))
-
-  addCents 2 3
-  --> Cents 5
-
-
--}
-addCents : Cents -> Cents -> Cents
-addCents a b =
-    mapCents2 (+) a b
-
-
-{-|
-
-    import Internal.Types exposing(Cents(..))
-
-    negateCents (Cents 3)
-    --> Cents -3
-
--}
-negateCents : Cents -> Cents
-negateCents cents =
-    mapCents (\k -> -k) cents
-
-{-|
-    import Internal.Types exposing(Cents(..))
-
-    subtractCents (Cents 3) (Cents 1)
-    --> Cents 2
-
--}
-subtractCents : Cents -> Cents -> Cents
-subtractCents a b =
-    mapCents2 (-) a b
-
-
-gtCents : Cents -> Cents -> Bool
-gtCents a b =
-    mapCents2E (>) a b
-
-gteCents : Cents -> Cents -> Bool
-gteCents a b =
-    mapCents2E (>=) a b
 
 bankTime : Int -> BankTime
 bankTime t = BankTime t
@@ -288,7 +161,7 @@ stringFromMoney (Money m) =
 -}
 negate : Money -> Money
 negate (Money m) =
-    Money {m | amount = negateCents m.amount}
+    Money {m | amount = Cents.negate m.amount}
 
 
 {-|

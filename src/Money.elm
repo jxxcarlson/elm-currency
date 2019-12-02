@@ -50,6 +50,7 @@ import Internal.Types as Type exposing(
   , CurrencyType(..))
 
 import Internal.Money as Money
+import Internal.Value as Value
 
 {-| Money is the fundamental type of this module.
 A value of type Money has an amount, a type (Fiat or Complementary).
@@ -91,7 +92,7 @@ type alias Value = Type.Value
 
 
 createValue : Currency -> Float -> Value
-createValue = Money.createValue
+createValue = Value.create
 
 {-| Return a string representation of a Value
 
