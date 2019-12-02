@@ -1,7 +1,6 @@
 module Entity exposing (Entity(..), Common, Characteristics(..)
   , BusinessCharRecord
   , HouseholdCharRecord
-  , Item
   , TEntity(..)
   , complementaryAccount
   , fiatAccount
@@ -10,6 +9,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , getFiatAccount
   , setFiatAccount
   , inventorySize
+  , inventory
   , fiatHoldingsOEntities
   , setCCAccount
   , getCCAccount
@@ -37,13 +37,9 @@ import CellGrid exposing(Position)
 import Color exposing(Color)
 import Money exposing(Money)
 import Account exposing(Account)
-
-
-
+import Inventory exposing (Inventory, Item)
 
 type Entity = Entity Common Characteristics
-
-
 
 
 type alias Common = {
@@ -51,10 +47,15 @@ type alias Common = {
     , entityType : TEntity
     , complementaryAccount : Account
     , fiatAccount : Account
-    , inventory : List Item
+    , inventory : Inventory
     , position : Position
     , color : Color
    }
+
+
+inventory : Entity -> List Item
+inventory (Entity common _) =
+    common.inventory
 
 complementaryAccount : Entity -> Account
 complementaryAccount (Entity common _) =
@@ -69,11 +70,6 @@ selectAccount money (Entity common _) =
      if Money.currency money == Account.currency common.fiatAccount then Just <| common.fiatAccount
              else if Money.currency money == Account.currency common.complementaryAccount then Just <|common.complementaryAccount
              else Nothing
-
-type Item = Item {
-     itemName : String
-   , price : Money.Value
-   , quantity : Int}
 
 
 

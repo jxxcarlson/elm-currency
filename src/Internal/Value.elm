@@ -88,6 +88,23 @@ subtract a b =
 
 
 {-|
+
+    import Internal.Types exposing(Value(..), Cents(..))
+    import Internal.Money as Money
+
+    v : Value
+    v = Value Money.usDollars (Cents 200)
+
+    mul 3 v
+    --> Value Money.usDollars (Cents 600)
+
+-}
+mul : Int -> Value -> Value
+mul k v =
+    imap Cents.mul k v
+
+
+{-|
     import Internal.Types exposing(Value(..), Cents(..))
     import Internal.Money as Money
 

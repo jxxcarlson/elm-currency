@@ -39,6 +39,10 @@ add a b =
     map2 (+) a b
 
 
+mul : Int -> Cents -> Cents
+mul k c =
+    imap (\k_ n_ -> k_ * n_) k c
+
 {-|
 
     import Internal.Types exposing(Cents(..))

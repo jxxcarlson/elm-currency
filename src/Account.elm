@@ -49,7 +49,7 @@ empty = Internal.Account.empty
 currency : Account -> Currency
 currency = Internal.Account.currency
 
-
+{-|
 Return the value of an account at a given time.
 
 -}
