@@ -26,7 +26,7 @@ imap f k (Value curr c) =
     Value curr (f k c)
 
 map2 : (Cents -> Cents -> Cents ) -> Value -> Value -> Maybe Value
-map2 f (Value curr1 curr2  of
+map2 f (Value curr1 curr2 of
         True ->  Just (Value curr1 (f cents1 cents2))
         False -> Nothing
 
