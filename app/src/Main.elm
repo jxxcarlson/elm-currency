@@ -43,8 +43,6 @@ type alias Model =
 
 type Msg
     = NoOp
-    | InputText String
-    | ReverseText
     | CellGrid CellGrid.Render.Msg
     | Tick Time.Posix
 
@@ -58,7 +56,7 @@ init flags =
     ( { input = "App started"
       , output = "App started"
       , counter = 0
-      , state = (Engine.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
+      , state = (State.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
       }
     , Cmd.none
     )
@@ -73,12 +71,6 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-
-        InputText str ->
-            ( { model | input = str, output = str }, Cmd.none )
-
-        ReverseText ->
-            ( { model | output = model.output |> String.reverse |> String.toLower }, Cmd.none )
 
         CellGrid msg_ ->
             ( model, Cmd.none)
@@ -103,9 +95,6 @@ mainColumn model =
             [ title "Simulator II"
             , displayState model
             , displayDashboard model
-            --, inputText model
-           -- , appButton
-            --, outputDisplay model
             ]
 
 displayDashboard  model =
@@ -148,27 +137,3 @@ outputDisplay model =
         [ text model.output ]
 
 
-inputText : Model -> Element Msg
-inputText model =
-    Input.text []
-        { onChange = InputText
-        , text = model.input
-        , placeholder = Nothing
-        , label = Input.labelLeft [] <| el [] (text "")
-        }
-
-
-appButton : Element Msg
-appButton =
-    row [ centerX ]
-        [ Input.button Style.button
-            { onPress = Just ReverseText
-            , label = el [ centerX, centerY ] (text "Reverse")
-            }
-        ]
-
-
-
---
--- STYLE
---

@@ -1,10 +1,10 @@
-module Engine exposing (render, nextState, initialState, initialStateWithHouseholds)
+module Engine exposing (render, nextState)
 
 import Action
 import Entity exposing(Entity)
 import EngineData
 import Random
-import State exposing(State)
+import State exposing(State, initialState)
 import Html exposing (Html)
 import Color exposing(Color)
 import CellGrid exposing(CellGrid, Dimensions)
@@ -15,20 +15,7 @@ import CellGrid.Render exposing (CellStyle)
 config =
     { maxRandInt = 100000}
 
-initialState : Int -> State
-initialState k =
-    { businesses = []
-     , households = []
-     , seed = Random.initialSeed 1234
-     , randInt = 4321
-     }
 
-initialStateWithHouseholds : Int -> Int -> State
-initialStateWithHouseholds intSeed numberOfHouseholds =
-   let
-       s = initialState intSeed
-   in
-       {s | households = EngineData.generateHouseholds intSeed numberOfHouseholds,  businesses = EngineData.businesses}
 
 render : State -> Html CellGrid.Render.Msg
 render s =
