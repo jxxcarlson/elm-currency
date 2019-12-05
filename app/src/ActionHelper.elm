@@ -4,7 +4,7 @@ module ActionHelper exposing (..)
 import Account
 import EngineData
 import Entity exposing(Entity)
-import Inventory exposing(Inventory, Item)
+import ModelTypes exposing (Inventory, Item)
 import Random
 import Random.List
 import Money

@@ -37,7 +37,7 @@ import CellGrid exposing(Position)
 import Color exposing(Color)
 import Money exposing(Money)
 import Account exposing(Account)
-import Inventory exposing (Inventory, Item)
+import ModelTypes exposing (Inventory, Item)
 
 type Entity = Entity Common Characteristics
 

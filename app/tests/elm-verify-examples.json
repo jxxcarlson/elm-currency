@@ -1,4 +1,4 @@
 {
   "root": "../src",
-  "tests": ["Action", "ActionHelper", "Inventory"]
+  "tests": ["Action", "ActionHelper", "Internal.Inventory", "Inventory"]
 }
