@@ -1,6 +1,7 @@
-module Inventory exposing (add, sub, quantity, getItemQuantity)
+module Inventory exposing (add, sub, quantity, price, getItemQuantity)
 
 import ModelTypes exposing(Item, Inventory, InventoryError(..))
+import Internal.Types exposing(Value)
 import Internal.Inventory exposing(name, price, quantity, mapItem)
 
 {-|
@@ -74,6 +75,8 @@ sub item inventory  =
 quantity : Item -> Int
 quantity = Internal.Inventory.quantity
 
+price : Item -> Value
+price = Internal.Inventory.price
 
 getItemQuantity : Item -> Inventory -> Int
 getItemQuantity item inventory =

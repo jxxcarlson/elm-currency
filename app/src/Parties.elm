@@ -2,7 +2,7 @@ module Parties exposing (..)
 
 import Entity exposing(Entity)
 import Money exposing(Money, BankTime)
-import ModelTypes exposing(Item)
+import ModelTypes exposing(Item, InventoryError(..))
 import Account
 import Value
 import Internal.Utility as Utility
@@ -39,9 +39,9 @@ buy bt money item parties =
        (Just buyerAccount, Just sellerAccount ) ->
            let
                conditions =
-                   [ Value.gte (Account.value bt buyerAccount) (Money.value bt money) -- buyer has sufficient funds
-                   , Money.value bt money == Value.mul item.quantity item.price      -- buyer tendered amount == cost of goods
-                   , Inventory.quantity item  >= Inventory.getItemQuantity item sellerInventory-- Seller has sufficient inventory
+                   [ Value.gte (Account.value bt buyerAccount) (Money.value bt money) |> Maybe.withDefault False -- buyer has sufficient funds
+                   , (Money.value bt money) == (Value.mul (Inventory.quantity item) (Inventory.price item))   -- buyer tendered amount == cost of goods
+                   , Inventory.quantity item   >=  Inventory.getItemQuantity item sellerInventory-- Seller has sufficient inventory
                    ]
            in
                case Utility.andOfList conditions of
@@ -50,11 +50,18 @@ buy bt money item parties =
                      let
                        updatedSellerAccount = Account.credit bt money sellerAccount
                        updatedBuyerAccount = Account.debit bt money buyerAccount
-                       updatedSellerInventory = Inventory.sub item sellerInventory
-                       updatedBuyerInventory = Inventory.add item buyerInventory
-                       b2 = b |> Entity.updateAccount updatedBuyerAccount |> Entity.setInventory updatedBuyerInventory
-                       s2 = s |> Entity.updateAccount updatedSellerAccount |> Entity.setInventory updatedSellerInventory
+                       (status, updatedSellerInventory) = Inventory.sub item sellerInventory
+
                      in
-                        (TSuccess, Parties {seller = s2, buyer = b2})
+                       case status of
+                           InventoryOpSuccess ->
+                               let
+                                  updatedBuyerInventory = Inventory.add item buyerInventory
+                                  b2 = b |> Entity.updateAccount updatedBuyerAccount |> Entity.setInventory updatedBuyerInventory
+                                  s2 = s |> Entity.updateAccount updatedSellerAccount |> Entity.setInventory updatedSellerInventory
+                                in
+                                  (TSuccess, Parties {seller = s2, buyer = b2})
+                           _ -> (TSFailure "Insufficient inventory or something else", parties)
+
 
 
