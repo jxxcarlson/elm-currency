@@ -11,6 +11,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , inventorySize
   , inventory
   , fiatHoldingsOEntities
+  , updateAccount
   , setCCAccount
   , getCCAccount
   , getType
@@ -18,6 +19,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , setPosition
   , getColor
   , selectAccount
+  , setInventory
   , setColor)
 
 {-|
@@ -37,6 +39,7 @@ import CellGrid exposing(Position)
 import Color exposing(Color)
 import Money exposing(Money)
 import Account exposing(Account)
+import Internal.Types exposing(CurrencyType(..))
 import ModelTypes exposing (Inventory, Item)
 
 type Entity = Entity Common Characteristics
@@ -114,6 +117,9 @@ distance : Entity -> Entity -> Float
 distance (Entity common1 _)  (Entity common2 _)=
    positionDistance common1.position common2.position
 
+
+
+
 getFiatAccount : Entity -> Account
 getFiatAccount (Entity common _) =
     common.fiatAccount
@@ -129,6 +135,17 @@ getCCAccount (Entity common _) =
 setCCAccount : Account -> Entity -> Entity
 setCCAccount account (Entity common char) =
     Entity { common | complementaryAccount = account} char
+
+
+updateAccount : Account -> Entity -> Entity
+updateAccount account e =
+    case Account.currencyType account of
+        Fiat -> setFiatAccount account e
+        Complementary -> setCCAccount account e
+
+setInventory : Inventory -> Entity -> Entity
+setInventory inventory_ (Entity common characteristics) =
+    (Entity {common | inventory = inventory_} characteristics)
 
 
 setName : String -> Entity -> Entity

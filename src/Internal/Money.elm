@@ -23,7 +23,7 @@ bankTime t = BankTime t
 
 
 createCurrency : CurrencyType -> String  -> Currency
-createCurrency ctype name = Currency ctype  name
+createCurrency ctype_ name = Currency ctype_  name
 
 createCompCurrency : String  -> Currency
 createCompCurrency name = Currency Complementary  name
@@ -107,6 +107,14 @@ amount (Money m) =
 
 currency : Money -> Currency
 currency (Money m) = m.currency
+
+currencyType : Money -> CurrencyType
+currencyType (Money m) =
+     m.currency |> ctype
+
+ctype : Currency -> CurrencyType
+ctype (Currency t _) = t
+
 
 
 issuedAt : Money -> BankTime
@@ -357,8 +365,8 @@ stringFromBankTime (BankTime k) =
 
 
 stringFromCurrency : Currency -> String
-stringFromCurrency (Currency ctype name) =
-    case ctype of
+stringFromCurrency (Currency ctype_ name) =
+    case ctype_ of
         Fiat -> interpolate "{0} ({1})" [name, "F"]
         Complementary -> interpolate "{0} ({1})" [name, "C"]
 

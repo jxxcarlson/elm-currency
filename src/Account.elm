@@ -2,13 +2,14 @@ module Account exposing (
     Account
     , createWithCurrency
    , currency
+   , currencyType
    , empty
    , value
    , debit
    , credit
    , merge)
 
-import Internal.Types exposing(Money, Currency, Value, BankTime)
+import Internal.Types exposing(Money, Currency, CurrencyType, Value, BankTime)
 
 import Internal.Account exposing(Account)
 
@@ -93,3 +94,5 @@ merge : List Account -> Maybe Account
 merge = Internal.Account.merge
 
 
+currencyType : Account -> CurrencyType
+currencyType = Internal.Account.currencyType

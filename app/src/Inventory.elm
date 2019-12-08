@@ -1,7 +1,7 @@
-module Inventory exposing (add, sub)
+module Inventory exposing (add, sub, quantity, getItemQuantity)
 
 import ModelTypes exposing(Item, Inventory, InventoryError(..))
-import Internal.Inventory  exposing(name, price, quantity, mapItem)
+import Internal.Inventory exposing(name, price, quantity, mapItem)
 
 {-|
 
@@ -71,4 +71,14 @@ sub item inventory  =
                  (InsufficientQuantity, List.map (\targetItem -> Internal.Inventory.subFromItem adjustedItem targetItem) inventory)
 
 
+quantity : Item -> Int
+quantity = Internal.Inventory.quantity
 
+
+getItemQuantity : Item -> Inventory -> Int
+getItemQuantity item inventory =
+   inventory
+   |> List.filter (\i -> name i == name item && price i == price item)
+   |> List.head
+   |> Maybe.map quantity
+   |> Maybe.withDefault 0

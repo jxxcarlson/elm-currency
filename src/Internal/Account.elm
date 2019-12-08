@@ -1,6 +1,6 @@
 module Internal.Account exposing (..)
 
-import Internal.Types  exposing(BankTime, Currency, Money, Cents(..), Value(..))
+import Internal.Types  exposing(BankTime, Currency, CurrencyType, Money, Cents(..), Value(..))
 import Internal.Money as Money
 import Internal.Utility as Utility
 import Maybe.Extra
@@ -27,6 +27,10 @@ merge list =
 currency : Account -> Currency
 currency (Account data) =
     data.currency
+
+currencyType : Account -> CurrencyType
+currencyType account =
+    account |> currency |> Money.ctype
 
 transactions : Account -> List Money
 transactions (Account data) =
