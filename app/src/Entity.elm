@@ -14,6 +14,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , updateAccount
   , setCCAccount
   , getCCAccount
+  , mapInventory
   , getType
   , setName
   , setPosition
@@ -59,6 +60,11 @@ type alias Common = {
 inventory : Entity -> List Item
 inventory (Entity common _) =
     common.inventory
+
+mapInventory : (Inventory -> Inventory) -> Entity -> Entity
+mapInventory f (Entity common characterstics) =
+    Entity {common | inventory = f common.inventory } characterstics
+
 
 complementaryAccount : Entity -> Account
 complementaryAccount (Entity common _) =
@@ -179,3 +185,9 @@ setColor r g b (Entity common characteristics) =
 inventorySize : Entity -> Int
 inventorySize (Entity common _) =
        List.length common.inventory
+
+inventoryAmount : String -> Entity -> Int
+inventoryAmount itemName_ e =
+    List.filter (\i -> ModelTypes.itemName i == itemName_) (inventory e)
+      |> List.map ModelTypes.itemQuantity
+      |> List.sum

@@ -11,9 +11,11 @@ import Entity exposing(Entity(..), TEntity(..)
 
 import CellGrid exposing(Position)
 import Color exposing(Color)
-import Money
+import Money exposing(Value)
 import Account exposing(Account)
 import Random
+import ModelTypes exposing (Item(..))
+
 
 type alias Config = {
    tickLoopInterval : Float
@@ -25,15 +27,19 @@ type alias Config = {
   , numberOfTimesToWatchContent : Int
   , businessRadius : Float
   , itemPrice : Money.Value
+  , itemA : Item
   , monthlyItemConsumption : Int
-  , householdPurchaseDays : List Int
+  ,  householdPurchaseDays : List Int
+  ,  householdPayDays : List Int
+  , fiatCurrency : Money.Currency
   , fiatCurrencyName : String
   , periodicHouseHoldFiatIncome : Float
   , monthlyCCIncome : Money.Value
  }
 
 config : Config
-config = {
+config =
+   {
      tickLoopInterval = 1000
      , cycleLength = 30
     , renderWidth = 500
@@ -43,8 +49,11 @@ config = {
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
+    , itemA = Item {name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1  }
     , monthlyItemConsumption = 8
     , householdPurchaseDays = [2, 6, 10, 14, 18, 22, 26, 30]
+    , householdPayDays = [1, 15]
+    , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
     , periodicHouseHoldFiatIncome = 8.0
     , monthlyCCIncome = Money.createValue cambiatus 0
@@ -144,7 +153,7 @@ newState k s =
          (i, seed1) = Random.step (Random.int 0 config.gridWidth) s.seed
          (j, seed2) = Random.step (Random.int 0 config.gridWidth) seed1
          newCount = s.count + 1
-         newName = String.fromInt newCount
+         newName = String.fromInt newCount -- thus each household has a unique identifier
          newHousehold = initialHousehold |> setPosition i j |> setName newName
      in
        {s | count = newCount

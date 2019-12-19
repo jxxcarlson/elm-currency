@@ -174,3 +174,5 @@ currencyType = Money.currencyType
 value : BankTime -> Money -> Value
 value = Money.value
 
+
+

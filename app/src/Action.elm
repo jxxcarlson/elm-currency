@@ -1,4 +1,4 @@
-module Action exposing (payHouseholds, dailyActivity, buyA)
+module Action exposing (payHouseholds, dailyActivity, consumeA, buyGoods)
 
 
 import EngineData
@@ -6,6 +6,8 @@ import ActionHelper as AH
 import State exposing(State)
 import Utility
 import Entity exposing(Entity)
+import Inventory
+import ModelTypes exposing(Inventory)
 
 
 {-|
@@ -19,7 +21,8 @@ import Entity exposing(Entity)
 -}
 payHouseholds : Int -> State -> State
 payHouseholds t state =
-  if List.member (modBy 30 t) state.config.householdPurchaseDays then
+  if List.member (modBy 30 t) state.config.householdPayDays
+  then
     let
         households = AH.creditHouseHolds t EngineData.config.periodicHouseHoldFiatIncome state.households
      in
@@ -31,14 +34,41 @@ dailyActivity : Int -> State -> State
 dailyActivity t state =
     state
 
-buyA : Int -> State -> State
-buyA t state =
-    Utility.applyToList buyAForHouseHold state.households state
+
+
+consumeA : Int -> State -> State
+consumeA t state =
+     if List.member (modBy 30 t) state.config.householdPurchaseDays then
+       let
+           reduceInventoryOfA : Inventory -> Inventory
+           reduceInventoryOfA inventory =
+               Inventory.sub state.config.itemA inventory |> Tuple.second
+
+           reduceInventoryOfHouseHold : Entity -> Entity
+           reduceInventoryOfHouseHold e =
+               Entity.mapInventory reduceInventoryOfA e
+
+
+           newHouseholds = List.map reduceInventoryOfHouseHold state.households
+       in
+          {state | households = newHouseholds}
+      else
+        state
+
+
+consumeA1 : Int -> State -> State
+consumeA1 t state =
+    Utility.applyToList consumeAForHouseHold state.households state
       |> Maybe.withDefault state
 
 
-buyAForHouseHold : Entity -> State -> State
-buyAForHouseHold houseHold state =
+consumeAForHouseHold : Entity -> State -> State
+consumeAForHouseHold houseHold state =
+    state
+
+
+buyGoods : Int -> State -> State
+buyGoods t state =
     state
 
 -- HELPERS --

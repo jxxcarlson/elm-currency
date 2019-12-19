@@ -59,5 +59,6 @@ nextState : Int -> Int -> State -> State
 nextState period t state =
     state
       |> Action.payHouseholds t
-      |> Action.buyA t
+      |> Action.buyGoods t
+      |> Action.consumeA t
 

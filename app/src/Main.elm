@@ -20,6 +20,7 @@ import Money
 import State exposing(State)
 import Time
 import Style
+import Report
 import String.Interpolate exposing(interpolate)
 
 
@@ -128,7 +129,9 @@ dashboard : Model -> Element msg
 dashboard model =
     column Style.dashboard [
        el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
-     , el [] (text <| "H = " ++ fiatHoldingsDisplay model)]
+     , el [] (text <| "H = " ++ fiatHoldingsDisplay model)
+     , el [] (text <| "Households A = " ++ String.fromInt (Report.inventoryOf "AA" model.state))
+     ]
 
 footer  model =
     row [paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 50)] [

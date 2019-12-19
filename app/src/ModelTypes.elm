@@ -1,5 +1,4 @@
-module ModelTypes exposing (Item(..), Inventory, InventoryError(..))
-
+module ModelTypes exposing (Item(..), Inventory, InventoryError(..), itemName, itemPrice, itemQuantity)
 import Money
 
 {-|  In this model, we assume that the name
@@ -13,6 +12,19 @@ type Item = Item {
      name : String
    , price : Money.Value
    , quantity : Int}
+
+itemName : Item -> String
+itemName (Item i) =
+    i.name
+
+itemPrice : Item -> Money.Value
+itemPrice (Item i) =
+    i.price
+
+
+itemQuantity : Item -> Int
+itemQuantity (Item i) =
+    i.quantity
 
 
 type alias Inventory = List Item
