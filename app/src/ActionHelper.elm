@@ -101,7 +101,7 @@ creditHousehold : Int -> Float -> Entity -> Entity
 creditHousehold t value entity =
     let
         currency = Money.createFiatCurrency EngineData.config.fiatCurrencyName
-        money = Money.createInfinite currency 0 EngineData.config.monthlyFiatIncome
+        money = Money.createInfinite currency 0 EngineData.config.periodicHouseHoldFiatIncome
         account = Account.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
     in
         Entity.setFiatAccount account entity

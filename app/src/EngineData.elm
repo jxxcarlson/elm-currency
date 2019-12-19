@@ -1,4 +1,4 @@
-module EngineData exposing (businesses, config, generateHouseholds, supplier, business1, business2, initialHousehold)
+module EngineData exposing (Config, businesses, config, generateHouseholds, supplier, business1, business2, initialHousehold)
 
 import Entity exposing(Entity(..), TEntity(..)
   , Characteristics(..)
@@ -26,8 +26,9 @@ type alias Config = {
   , businessRadius : Float
   , itemPrice : Money.Value
   , monthlyItemConsumption : Int
+  , householdPurchaseDays : List Int
   , fiatCurrencyName : String
-  , monthlyFiatIncome : Float
+  , periodicHouseHoldFiatIncome : Float
   , monthlyCCIncome : Money.Value
  }
 
@@ -43,8 +44,9 @@ config = {
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
     , monthlyItemConsumption = 8
+    , householdPurchaseDays = [2, 6, 10, 14, 18, 22, 26, 30]
     , fiatCurrencyName = "Real"
-    , monthlyFiatIncome = 16.0
+    , periodicHouseHoldFiatIncome = 8.0
     , monthlyCCIncome = Money.createValue cambiatus 0
    }
 

@@ -57,8 +57,7 @@ newRandomNumber state =
 
 nextState : Int -> Int -> State -> State
 nextState period t state =
-    case (modBy period t) of
-       0 -> Action.payHouseholds t state |>  Action.dailyActivity t
-       15 ->  Action.payHouseholds t state |> Action.dailyActivity t
-       _ ->   Action.dailyActivity t state
+    state
+      |> Action.payHouseholds t
+      |> Action.buyA t
 

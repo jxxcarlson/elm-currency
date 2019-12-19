@@ -9,6 +9,7 @@ type alias State =
   , households : List Entity
   , seed : Random.Seed
   , randInt : Int
+  , config : EngineData.Config
   }
 
 initialState : Int -> State
@@ -17,6 +18,7 @@ initialState k =
      , households = []
      , seed = Random.initialSeed 1234
      , randInt = 4321
+     , config = EngineData.config
      }
 
 

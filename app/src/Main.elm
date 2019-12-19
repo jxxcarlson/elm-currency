@@ -38,13 +38,16 @@ type alias Model =
     , output : String
     , counter : Int
     , state : State
+    , runState : RunState
     }
 
+type RunState = Running | Paused | End
 
 type Msg
     = NoOp
     | CellGrid CellGrid.Render.Msg
     | Tick Time.Posix
+    | ToggleRun
 
 
 type alias Flags =
@@ -57,6 +60,7 @@ init flags =
       , output = "App started"
       , counter = 0
       , state = (State.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
+      , runState = Paused
       }
     , Cmd.none
     )
@@ -76,8 +80,20 @@ update msg model =
             ( model, Cmd.none)
 
         Tick _ ->
-            ({model | counter = model.counter + 1
-              , state = Engine.nextState EngineData.config.cycleLength model.counter model.state }, Cmd.none)
+            case model.runState of
+                Running ->
+                    ({model | counter = model.counter + 1
+                      , state = Engine.nextState EngineData.config.cycleLength model.counter model.state }, Cmd.none)
+                _ -> (model, Cmd.none)
+
+        ToggleRun ->
+            case model.runState of
+                Paused ->
+                    ({ model | runState = Running}, Cmd.none)
+                Running ->
+                    ({ model | runState = Paused}, Cmd.none)
+                End ->
+                  ({ model | runState = End}, Cmd.none)
 
 --
 -- VIEW
@@ -86,21 +102,37 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout [] (mainColumn model)
+    Element.layout [centerX] (mainColumn model)
 
 
 mainColumn : Model -> Element Msg
 mainColumn model =
-    column Style.mainColumn
-            [ title "Simulator II"
-            , displayState model
-            , displayDashboard model
+        column Style.mainColumn
+          [ title "Simulator II"
+            , row [centerX]
+                [ lhColumn model
+                , dashboard model
+                ]
             ]
 
-displayDashboard  model =
-    row [Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 30)] [
-      el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
-      , el [] (text <| fiatHoldingsDisplay model)
+
+
+lhColumn : Model -> Element Msg
+lhColumn model =
+    column Style.lhColumn
+            [ displayState model
+            , footer model
+            ]
+
+dashboard : Model -> Element msg
+dashboard model =
+    column Style.dashboard [
+       el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
+     , el [] (text <| "H = " ++ fiatHoldingsDisplay model)]
+
+footer  model =
+    row [paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 50)] [
+        runButton model, el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
       ]
 
 fiatHoldingsDisplay model =
@@ -112,11 +144,11 @@ fiatHoldingsDisplay model =
 clock : Int -> String
 clock k =
     let
-        day = k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 3 ' '
+        day = k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 0 ' '
         month = k // 30 |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
         dayInMonth = modBy 30 k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
     in
-    interpolate "{0}: {1}/{2}" [day, month, dayInMonth]
+    interpolate "t = {0}: {1}/{2}" [day, month, dayInMonth]
 
 displayState : Model -> Element Msg
 displayState model =
@@ -137,3 +169,21 @@ outputDisplay model =
         [ text model.output ]
 
 
+{- Buttons -}
+
+
+runButton : Model -> Element Msg
+runButton model =
+    let
+        label =
+          case model.runState of
+             Running -> "Running"
+             Paused -> "Paused"
+             End -> "End"
+    in
+    row [ ]
+        [ Input.button Style.button
+            { onPress = Just ToggleRun
+            , label = el [ centerY ] (text label)
+            }
+        ]

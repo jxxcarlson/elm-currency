@@ -15,7 +15,7 @@ type alias PartiesData = {buyer : Entity, seller : Entity}
 
 type TransactionStatus = TSuccess | TSFailure String
 
-
++1 617 852 7490
 buyer : Parties -> Entity
 buyer (Parties data) =
    data.buyer
