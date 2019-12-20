@@ -1,4 +1,4 @@
-module EngineData exposing (Config, businesses, config, generateHouseholds, supplier, business1, business2, initialHousehold)
+module EngineData exposing (Config, businesses, config, generateHouseholds, supplier, suppliers, business1, business2, initialHousehold)
 
 import Entity exposing(Entity(..), TEntity(..)
   , Characteristics(..)
@@ -30,6 +30,7 @@ type alias Config = {
   , itemA : Item
   , monthlyItemConsumption : Int
   ,  householdPurchaseDays : List Int
+  , householdConsumptionDays : List Int
   ,  householdPayDays : List Int
   , fiatCurrency : Money.Currency
   , fiatCurrencyName : String
@@ -51,7 +52,8 @@ config =
     , itemPrice = Money.createValue fiatCurrency 2
     , itemA = Item {name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1  }
     , monthlyItemConsumption = 8
-    , householdPurchaseDays = [2, 6, 10, 14, 18, 22, 26, 30]
+    , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28]
+    , householdConsumptionDays = [3, 7, 12, 15, 19, 23, 26, 29]
     , householdPayDays = [1, 15]
     , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
@@ -97,7 +99,9 @@ business2 =
 
 
 
-businesses = [business1, business2, supplier]
+businesses = [business1, business2]
+
+suppliers = [supplier]
 
 initialHousehold : Entity
 initialHousehold =

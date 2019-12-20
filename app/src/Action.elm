@@ -38,7 +38,7 @@ dailyActivity t state =
 
 consumeA : Int -> State -> State
 consumeA t state =
-     if List.member (modBy 30 t) state.config.householdPurchaseDays then
+     if List.member (modBy 30 t) state.config.householdConsumptionDays then
        let
            reduceInventoryOfA : Inventory -> Inventory
            reduceInventoryOfA inventory =
@@ -55,21 +55,40 @@ consumeA t state =
       else
         state
 
-
-consumeA1 : Int -> State -> State
-consumeA1 t state =
-    Utility.applyToList consumeAForHouseHold state.households state
-      |> Maybe.withDefault state
+initializeSupplier : State -> State
+initializeSupplier state = state
 
 
-consumeAForHouseHold : Entity -> State -> State
-consumeAForHouseHold houseHold state =
-    state
+
+--consumeA1 : Int -> State -> State
+--consumeA1 t state =
+--    Utility.applyToList consumeAForHouseHold state.households state
+--      |> Maybe.withDefault state
+--
+--
+--consumeAForHouseHold : Entity -> State -> State
+--consumeAForHouseHold houseHold state =
+--    state
 
 
 buyGoods : Int -> State -> State
 buyGoods t state =
-    state
+    if List.member (modBy 30 t) state.config.householdPurchaseDays then
+        let
+                addInventoryOfA : Inventory -> Inventory
+                addInventoryOfA inventory =
+                    Inventory.add state.config.itemA inventory
+
+                addInventoryOfHouseHold : Entity -> Entity
+                addInventoryOfHouseHold e =
+                    Entity.mapInventory addInventoryOfA e
+
+
+                newHouseholds = List.map addInventoryOfHouseHold state.households
+        in
+               {state | households = newHouseholds}
+      else
+             state
 
 -- HELPERS --
 
