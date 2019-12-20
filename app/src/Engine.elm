@@ -9,6 +9,7 @@ import Html exposing (Html)
 import Color exposing(Color)
 import CellGrid exposing(CellGrid, Dimensions)
 import CellGrid.Render exposing (CellStyle)
+import Utility
 
 
 
@@ -60,6 +61,6 @@ nextState period t state =
     state
       |> Action.businessBuyGoods
       |> Action.payHouseholds t
-      |> Action.householdBuyGoods t
+      |> Utility.iterate 10 (Action.householdBuyGoods t)
       |> Action.consumeA t
 

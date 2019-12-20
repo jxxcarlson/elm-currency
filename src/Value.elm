@@ -1,6 +1,6 @@
-module Value exposing (create, mul, gt, gte)
+module Value exposing (create, mul, gt, gte, intValue)
 
-import Internal.Types exposing(Value, Currency)
+import Internal.Types exposing(Value(..), Currency, Cents(..))
 import Internal.Value
 
 create : Currency -> Float -> Value
@@ -14,4 +14,13 @@ gte  = Internal.Value.gte
 
 gt : Value -> Value -> Maybe Bool
 gt  = Internal.Value.gt
+
+intValue : Value ->  Int
+intValue (Value currency cents)  =
+    intValueOfCents cents
+
+
+intValueOfCents : Cents  -> Int
+intValueOfCents (Cents k) = k
+
 

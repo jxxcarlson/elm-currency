@@ -142,6 +142,12 @@ dashboard model =
        el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
      , el [] (text <| "H = " ++ fiatHoldingsDisplay model)
      , el [] (text <| "Household inventory = " ++ String.fromInt (Report.householdInventoryOf "AA" model.state))
+     , el [] (text <| "[min, max] = " ++ (List.map String.fromInt (Report.minMaxHouseholdInventoryOf "AA" model.state) |> String.join ", "))
+     , el [] (text <| "low inventory (0) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 0 model.state))
+     , el [] (text <| "low inventory (1) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 1 model.state))
+     , el [] (text <| "low inventory (2) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 2 model.state))
+     , el [] (text <| "low inventory (3) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 3 model.state))
+
      , el [] (text <| "Business inventory = " ++ businessInventory model)
      ]
 

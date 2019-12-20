@@ -14,6 +14,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , inventory
   , fiatHoldingsOEntities
   , updateAccount
+  , mapAccount
   , setCCAccount
   , getCCAccount
   , mapInventory
@@ -152,6 +153,12 @@ updateAccount account e =
     case Account.currencyType account of
         Fiat -> setFiatAccount account e
         Complementary -> setCCAccount account e
+
+mapAccount : (Account -> Account) -> Account -> Entity -> Entity
+mapAccount f account e =
+    case Account.currencyType account of
+        Fiat -> setFiatAccount (f account) e
+        Complementary -> setCCAccount  (f account) e
 
 setInventory : Inventory -> Entity -> Entity
 setInventory inventory_ (Entity common characteristics) =

@@ -10,6 +10,9 @@ import Inventory
 import ModelTypes exposing(Inventory)
 import Random
 import List.Extra
+import Account
+import Money
+import Value
 
 {-|
 
@@ -109,10 +112,102 @@ businessBuyGoods state =
            { state | seed = newSeed, businesses = newBusinesses}
 
 
-
-
 householdBuyGoods : Int -> State -> State
 householdBuyGoods t state =
+    let
+
+        sortByAccountValue : Entity -> Int
+        sortByAccountValue e =
+            Entity.getFiatAccount e
+              |> Account.value (Money.bankTime t)
+              |> Value.intValue
+
+
+        orderedHouseholds = List.sortBy (\e -> sortByAccountValue e) state.households
+          |> List.take 5
+
+        n = (List.length orderedHouseholds) - 1
+
+        (i, newSeed) = Random.step (Random.int 0 n) state.seed
+
+    in
+       case List.Extra.getAt i state.households of
+           Nothing -> {state | seed = newSeed}
+           Just e ->
+              householdBuyGoods_ t e state
+
+householdBuyGoods_ : Int -> Entity -> State -> State
+householdBuyGoods_ t e state =
+    case AH.nearestShop e state of
+        Nothing -> state
+        Just shop ->
+          let
+             maxRandInt = 1000
+
+             (i, newSeed) = Random.step (Random.int 0 maxRandInt) state.seed
+
+             randomPurchaseAmount : Int -> Int
+             randomPurchaseAmount ri =
+                let
+                   p = (toFloat ri)/(toFloat maxRandInt)
+                   range = toFloat (state.config.householdMinimumPurchaseAmount - state.config.householdMaximumPurchaseAmount)
+                in
+                   state.config.householdMinimumPurchaseAmount + round(p * range)
+
+             a = randomPurchaseAmount i
+             qS = Inventory.getItemQuantity state.config.itemA (Entity.inventory shop)
+             qH = Inventory.getItemQuantity state.config.itemA (Entity.inventory e)
+             qq = if qH > 2 then
+                     0
+                   else
+                    min a qS
+
+             item = ModelTypes.setQuantity qq state.config.itemA
+
+             addInventoryOfA : Inventory -> Inventory
+             addInventoryOfA  inventory =
+                Inventory.add item inventory
+
+             addInventoryOfEntity : Entity -> Entity
+             addInventoryOfEntity e_ =
+                Entity.mapInventory addInventoryOfA e_
+
+             subInventoryOfA : Inventory -> Inventory
+             subInventoryOfA  inventory =
+                Inventory.sub item inventory
+                 |> Tuple.second
+
+             subInventoryOfEntity : Entity -> Entity
+             subInventoryOfEntity e_ =
+                Entity.mapInventory subInventoryOfA e_
+
+             debitAccount : Account.Account -> Account.Account
+             debitAccount = (\account -> Account.debit (Money.bankTime t) state.config.itemAMoney account)
+
+             creditAccount : Account.Account -> Account.Account
+             creditAccount = (\account -> Account.debit (Money.bankTime t) state.config.itemAMoney account)
+
+             newHousehold = addInventoryOfEntity e
+                |> Entity.mapAccount debitAccount (Entity.getFiatAccount e)
+
+             newBusiness = subInventoryOfEntity shop
+                |> Entity.mapAccount creditAccount (Entity.getFiatAccount shop)
+
+             newHouseholds = List.Extra.updateIf
+                      (\e1 -> Entity.getName e1 == Entity.getName e)
+                      (\_ -> newHousehold)
+                      state.households
+
+             newBusinesses = List.Extra.updateIf
+                                   (\e1 -> Entity.getName e1 == Entity.getName shop)
+                                   (\_ -> newBusiness)
+                                   state.businesses
+           in
+               {state | households = newHouseholds, businesses = newBusinesses, seed = newSeed}
+
+
+householdBuyGoods1 : Int -> State -> State
+householdBuyGoods1 t state =
     if List.member (modBy 30 t) state.config.householdPurchaseDays then
         let
                 addInventoryOfA : Inventory -> Inventory

@@ -11,7 +11,7 @@ import Entity exposing(Entity(..), TEntity(..)
 
 import CellGrid exposing(Position)
 import Color exposing(Color)
-import Money exposing(Value)
+import Money exposing(Value, Money)
 import Account exposing(Account)
 import Random
 import ModelTypes exposing (Item(..))
@@ -31,6 +31,7 @@ type alias Config = {
   , businessRadius : Float
   , itemPrice : Money.Value
   , itemA : Item
+  , itemAMoney : Money
   , randomPurchaseFraction : Float
   , minimumBusinesInventoryOfA : Int
   , minimumPurchaseOfA : Int
@@ -41,6 +42,8 @@ type alias Config = {
   , maxHouseholds : Int
   , monthlyItemConsumption : Int
   , householdPurchaseDays : List Int
+  , householdMinimumPurchaseAmount : Int
+  , householdMaximumPurchaseAmount : Int
   , householdConsumptionDays : List Int
   , householdPayDays : List Int
   , periodicHouseHoldFiatIncome : Float
@@ -63,6 +66,7 @@ config =
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
     , itemA = Item {name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1  }
+    , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
     , randomPurchaseFraction = 0.1
     , minimumBusinesInventoryOfA = 20
     , minimumPurchaseOfA = 5
@@ -72,6 +76,8 @@ config =
     , maxHouseholds = 20
     , monthlyItemConsumption = 8
     , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28]
+    , householdMinimumPurchaseAmount = 4
+    , householdMaximumPurchaseAmount = 4
     , householdConsumptionDays = [3, 7, 12, 15, 19, 23, 26, 29]
     , householdPayDays = [1, 15]
     , periodicHouseHoldFiatIncome = 8.0
@@ -167,6 +173,8 @@ generateHouseholds intSeed numberOfHouseholds =
     s.households
 
 
+initialInventory =
+    [config.itemA |> ModelTypes.setQuantity 4]
 
 newState : Int -> HouseHoldGeneratorState -> HouseHoldGeneratorState
 newState k s =
@@ -175,7 +183,7 @@ newState k s =
          (j, seed2) = Random.step (Random.int 0 config.gridWidth) seed1
          newCount = s.count + 1
          newName = String.fromInt newCount -- thus each household has a unique identifier
-         newHousehold = initialHousehold |> setPosition i j |> setName newName
+         newHousehold = initialHousehold |> setPosition i j |> setName newName |> Entity.setInventory initialInventory
      in
        {s | count = newCount
           , seed = seed2
