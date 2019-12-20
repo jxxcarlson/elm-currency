@@ -49,6 +49,7 @@ type Msg
     | CellGrid CellGrid.Render.Msg
     | Tick Time.Posix
     | ToggleRun
+    | Reset
 
 
 type alias Flags =
@@ -96,6 +97,16 @@ update msg model =
                 End ->
                   ({ model | runState = End}, Cmd.none)
 
+        Reset ->
+             ( {    input = "App started"
+                  , output = "App started"
+                  , counter = 0
+                  , state = (State.initialStateWithHouseholdsAndSeed model.state.seed EngineData.config.maxHouseholds )
+                  , runState = Paused
+                  }
+                , Cmd.none
+                )
+
 --
 -- VIEW
 --
@@ -142,7 +153,7 @@ businessInventory  model =
 
 footer  model =
     row [paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 50)] [
-        runButton model, el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
+        resetButton model, runButton model, el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
       ]
 
 fiatHoldingsDisplay model =
@@ -195,5 +206,13 @@ runButton model =
         [ Input.button Style.button
             { onPress = Just ToggleRun
             , label = el [ centerY ] (text label)
+            }
+        ]
+
+resetButton model =
+    row [ ]
+        [ Input.button Style.button
+            { onPress = Just Reset
+            , label = el [ centerY ] (text "Reset")
             }
         ]

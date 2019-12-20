@@ -1,4 +1,4 @@
-module State exposing (State, initialState, initialStateWithHouseholds)
+module State exposing (State, initialState, initialStateWithHouseholds, initialStateWithHouseholdsAndSeed)
 
 import Entity exposing(Entity)
 import Random
@@ -32,3 +32,15 @@ initialStateWithHouseholds intSeed numberOfHouseholds =
        {s |   households = EngineData.generateHouseholds intSeed numberOfHouseholds
            ,  businesses = EngineData.businesses
            ,  suppliers = EngineData.suppliers }
+
+
+initialStateWithHouseholdsAndSeed : Random.Seed -> Int -> State
+initialStateWithHouseholdsAndSeed seed numberOfHouseholds =
+   let
+       s = initialState 0
+       (i, newSeed) = Random.step (Random.int 0 100000) seed
+   in
+       {s |   households = EngineData.generateHouseholds i numberOfHouseholds
+           ,  businesses = EngineData.businesses
+           ,  suppliers = EngineData.suppliers
+           , seed = newSeed}
