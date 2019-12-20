@@ -21,19 +21,28 @@ type alias Config = {
    tickLoopInterval : Float
   , cycleLength : Int
   , renderWidth : Float
-  ,  gridWidth : Int
-  , maxHouseholds : Int
+  , gridWidth : Int
+  -- Financial
+  , fiatCurrency : Money.Currency
+  , fiatCurrencyName : String
+  -- Businesses
   , contentReleaseInterval : Int
   , numberOfTimesToWatchContent : Int
   , businessRadius : Float
   , itemPrice : Money.Value
   , itemA : Item
+  , randomPurchaseFraction : Float
+  , minimumBusinesInventoryOfA : Int
+  , minimumPurchaseOfA : Int
+  , maximumPurchaseOfA : Int
+
+
+  -- Households
+  , maxHouseholds : Int
   , monthlyItemConsumption : Int
-  ,  householdPurchaseDays : List Int
+  , householdPurchaseDays : List Int
   , householdConsumptionDays : List Int
-  ,  householdPayDays : List Int
-  , fiatCurrency : Money.Currency
-  , fiatCurrencyName : String
+  , householdPayDays : List Int
   , periodicHouseHoldFiatIncome : Float
   , monthlyCCIncome : Money.Value
  }
@@ -41,22 +50,30 @@ type alias Config = {
 config : Config
 config =
    {
-     tickLoopInterval = 1000
-     , cycleLength = 30
+      tickLoopInterval = 1000
+    , cycleLength = 30
     , renderWidth = 500
     , gridWidth = 30
-    , maxHouseholds = 20
+     -- Financial
+    , fiatCurrency = fiatCurrency
+    , fiatCurrencyName = "Real"
+     -- Businesses
     , contentReleaseInterval = 15
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
     , itemA = Item {name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1  }
+    , randomPurchaseFraction = 0.1
+    , minimumBusinesInventoryOfA = 20
+    , minimumPurchaseOfA = 5
+    , maximumPurchaseOfA = 20
+
+    -- Households
+    , maxHouseholds = 20
     , monthlyItemConsumption = 8
     , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28]
     , householdConsumptionDays = [3, 7, 12, 15, 19, 23, 26, 29]
     , householdPayDays = [1, 15]
-    , fiatCurrency = fiatCurrency
-    , fiatCurrencyName = "Real"
     , periodicHouseHoldFiatIncome = 8.0
     , monthlyCCIncome = Money.createValue cambiatus 0
    }
@@ -118,8 +135,8 @@ initialHousehold =
 
 
 type alias HouseHoldGeneratorState =
-    {  count : Int
-       , seed : Random.Seed
+    {   count : Int
+      , seed : Random.Seed
       , existingPositions : List CellGrid.Position
       , households : List Entity
       , maxHouseHolds : Int

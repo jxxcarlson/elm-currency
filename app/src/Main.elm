@@ -130,8 +130,15 @@ dashboard model =
     column Style.dashboard [
        el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
      , el [] (text <| "H = " ++ fiatHoldingsDisplay model)
-     , el [] (text <| "Households A = " ++ String.fromInt (Report.inventoryOf "AA" model.state))
+     , el [] (text <| "Household inventory = " ++ String.fromInt (Report.householdInventoryOf "AA" model.state))
+     , el [] (text <| "Business inventory = " ++ businessInventory model)
      ]
+
+
+businessInventory : Model -> String
+businessInventory  model =
+   List.map String.fromInt (Report.businessInventoryOf "AA" model.state)
+     |> String.join ", "
 
 footer  model =
     row [paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round EngineData.config.renderWidth)), height (px 50)] [

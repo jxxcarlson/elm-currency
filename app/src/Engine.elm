@@ -58,7 +58,8 @@ newRandomNumber state =
 nextState : Int -> Int -> State -> State
 nextState period t state =
     state
+      |> Action.businessBuyGoods
       |> Action.payHouseholds t
-      |> Action.buyGoods t
+      |> Action.householdBuyGoods t
       |> Action.consumeA t
 

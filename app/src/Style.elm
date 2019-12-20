@@ -25,7 +25,7 @@ lhColumn =
 dashboard =
     [  Background.color (rgb255  200 200 200)
     , paddingXY 12 8
-    , width (px 200)
+    , width (px 250)
     , height (px 570)
     , spacing 10
     , Font.size 14

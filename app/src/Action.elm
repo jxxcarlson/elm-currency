@@ -1,4 +1,4 @@
-module Action exposing (payHouseholds, dailyActivity, consumeA, buyGoods)
+module Action exposing (payHouseholds, dailyActivity, consumeA, householdBuyGoods, businessBuyGoods)
 
 
 import EngineData
@@ -8,7 +8,8 @@ import Utility
 import Entity exposing(Entity)
 import Inventory
 import ModelTypes exposing(Inventory)
-
+import Random
+import List.Extra
 
 {-|
 
@@ -71,8 +72,47 @@ initializeSupplier state = state
 --    state
 
 
-buyGoods : Int -> State -> State
-buyGoods t state =
+
+
+businessBuyGoods : State -> State
+businessBuyGoods state =
+    let
+        lowInventoryBusiness = List.filter (\e -> Entity.inventoryAmount "AA" e < state.config.minimumBusinesInventoryOfA) state.businesses
+    in
+    case List.head  lowInventoryBusiness of
+        Nothing -> state
+        Just business ->
+          let
+            maxRandInt = 1000
+
+            (i, newSeed) = Random.step (Random.int 0 maxRandInt) state.seed
+
+            randomPurchaseAmount : Int -> Int
+            randomPurchaseAmount ri =
+                let
+                   p = (toFloat ri)/(toFloat maxRandInt)
+                   range = toFloat (state.config.maximumPurchaseOfA - state.config.minimumPurchaseOfA)
+                in
+                   state.config.minimumPurchaseOfA + round(p * range)
+
+            a = randomPurchaseAmount i
+
+            item = ModelTypes.setQuantity a state.config.itemA
+
+            newBusiness = Entity.addToInventory item business
+            newBusinesses = List.Extra.updateIf
+                (\b -> Entity.getName b == Entity.getName newBusiness)
+                (\b -> newBusiness)
+                state.businesses
+
+          in
+           { state | seed = newSeed, businesses = newBusinesses}
+
+
+
+
+householdBuyGoods : Int -> State -> State
+householdBuyGoods t state =
     if List.member (modBy 30 t) state.config.householdPurchaseDays then
         let
                 addInventoryOfA : Inventory -> Inventory

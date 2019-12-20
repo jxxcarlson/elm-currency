@@ -5,12 +5,12 @@ import Random
 import EngineData
 
 type alias State =
-  { suppliers : List Entity
+  {  suppliers : List Entity
    , businesses : List Entity
-  , households : List Entity
-  , seed : Random.Seed
-  , randInt : Int
-  , config : EngineData.Config
+   , households : List Entity
+   , seed : Random.Seed
+   , randInt : Int
+   , config : EngineData.Config
   }
 
 initialState : Int -> State

@@ -6,8 +6,10 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , fiatAccount
   , getPosition
   , distance
+  , addToInventory
   , getFiatAccount
   , setFiatAccount
+  , inventoryAmount
   , inventorySize
   , inventory
   , fiatHoldingsOEntities
@@ -16,6 +18,7 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
   , getCCAccount
   , mapInventory
   , getType
+  , getName
   , setName
   , setPosition
   , getColor
@@ -41,6 +44,7 @@ import Color exposing(Color)
 import Money exposing(Money)
 import Account exposing(Account)
 import Internal.Types exposing(CurrencyType(..))
+import Inventory
 import ModelTypes exposing (Inventory, Item)
 
 type Entity = Entity Common Characteristics
@@ -153,6 +157,15 @@ setInventory : Inventory -> Entity -> Entity
 setInventory inventory_ (Entity common characteristics) =
     (Entity {common | inventory = inventory_} characteristics)
 
+
+addToInventory : Item -> Entity -> Entity
+addToInventory item e =
+    mapInventory (\inv -> Inventory.add item inv) e
+
+
+getName : Entity -> String
+getName (Entity common _) =
+    common.name
 
 setName : String -> Entity -> Entity
 setName name (Entity common characteristics) =
