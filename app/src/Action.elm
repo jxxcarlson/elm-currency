@@ -121,6 +121,9 @@ businessBuyGoods state =
            { state | seed = newSeed, businesses = newBusinesses}
 
 
+{-|  Choose a low-inventory household at random and buy goods
+
+-}
 householdBuyGoods : Int -> State -> State
 householdBuyGoods t state =
     let
@@ -166,7 +169,7 @@ householdBuyGoods_ t e state =
              a = randomPurchaseAmount i
              qS = Inventory.getItemQuantity state.config.itemA (Entity.inventory shop)
              qH = Inventory.getItemQuantity state.config.itemA (Entity.inventory e)
-             qP = if qH >= 4 then -- Don't purchase itemA if already have enough on hand
+             qP = if qH >= 2 then -- Don't purchase itemA if already have enough on hand
                      0
                    else
                     min a qS  -- can't purchase more than store has on hand

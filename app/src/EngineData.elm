@@ -168,7 +168,7 @@ generateHouseholds : Int -> Int -> List Entity
 generateHouseholds intSeed numberOfHouseholds =
   let
     i = initialHouseHoldGeneratorState intSeed config.numberOfHouseholds
-    s = List.foldl newState i (List.range 2  numberOfHouseholds)
+    s = List.foldl newState i (List.range 1  numberOfHouseholds)
   in
     s.households
 

@@ -141,6 +141,7 @@ dashboard model =
     column Style.dashboard [
        el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
      , el [] (text <| "H = " ++ fiatHoldingsDisplay model)
+     , el [] (text <| "Households = " ++ String.fromInt (model.state.households |> List.length))
      , el [] (text <| "Household inventory = " ++ String.fromInt (Report.householdInventoryOf "AA" model.state))
      , el [] (text <| "[min, max] = " ++ (List.map String.fromInt (Report.minMaxHouseholdInventoryOf "AA" model.state) |> String.join ", "))
      , el [] (text <| "low inventory (0) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 0 model.state))
