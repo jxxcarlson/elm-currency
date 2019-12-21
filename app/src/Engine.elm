@@ -56,11 +56,11 @@ newRandomNumber state =
     {state | randInt = newRandInt, seed = newSeed}
 
 
-nextState : Int -> Int -> State -> State
-nextState period t state =
+nextState :  Int -> State -> State
+nextState t state =
     state
       |> Action.businessBuyGoods
       |> Action.payHouseholds t
-      |> Utility.iterate 10 (Action.householdBuyGoods t)
+      |> Utility.iterate 20 (Action.householdBuyGoods t)
       |> Action.consumeA t
 

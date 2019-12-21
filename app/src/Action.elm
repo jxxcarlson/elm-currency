@@ -50,12 +50,19 @@ consumeA t state =
 
            reduceInventoryOfHouseHold : Entity -> Entity
            reduceInventoryOfHouseHold e =
-               Entity.mapInventory reduceInventoryOfA e
+               if Entity.inventoryAmount "AA" e > 0 then
+                  Entity.mapInventory reduceInventoryOfA e
+               else
+                  e
+
+           positiveInventoryHouseholds = List.filter (\e -> Entity.inventoryAmount "AA" e > 0) state.households
 
 
            newHouseholds = List.map reduceInventoryOfHouseHold state.households
        in
-          {state | households = newHouseholds}
+          {state | households = newHouseholds
+                 , totalHouseholdConsumption = state.totalHouseholdConsumption + (List.length positiveInventoryHouseholds)
+          }
       else
         state
 
@@ -80,7 +87,9 @@ initializeSupplier state = state
 businessBuyGoods : State -> State
 businessBuyGoods state =
     let
-        lowInventoryBusiness = List.filter (\e -> Entity.inventoryAmount "AA" e < state.config.minimumBusinesInventoryOfA) state.businesses
+        lowInventoryBusiness = List.filter
+            (\e -> Entity.inventoryAmount "AA" e < state.config.minimumBusinesInventoryOfA)
+            state.businesses
     in
     case List.head  lowInventoryBusiness of
         Nothing -> state
@@ -134,7 +143,7 @@ householdBuyGoods t state =
        case List.Extra.getAt i state.households of
            Nothing -> {state | seed = newSeed}
            Just e ->
-              householdBuyGoods_ t e state
+              householdBuyGoods_ t e {state | seed = newSeed }
 
 householdBuyGoods_ : Int -> Entity -> State -> State
 householdBuyGoods_ t e state =
@@ -150,19 +159,21 @@ householdBuyGoods_ t e state =
              randomPurchaseAmount ri =
                 let
                    p = (toFloat ri)/(toFloat maxRandInt)
-                   range = toFloat (state.config.householdMinimumPurchaseAmount - state.config.householdMaximumPurchaseAmount)
+                   range = toFloat (state.config.householdMaximumPurchaseAmount - state.config.householdMinimumPurchaseAmount)
                 in
                    state.config.householdMinimumPurchaseAmount + round(p * range)
 
              a = randomPurchaseAmount i
              qS = Inventory.getItemQuantity state.config.itemA (Entity.inventory shop)
              qH = Inventory.getItemQuantity state.config.itemA (Entity.inventory e)
-             qq = if qH > 2 then
+             qP = if qH >= 4 then -- Don't purchase itemA if already have enough on hand
                      0
                    else
-                    min a qS
+                    min a qS  -- can't purchase more than store has on hand
 
-             item = ModelTypes.setQuantity qq state.config.itemA
+             item = ModelTypes.setQuantity qP state.config.itemA
+
+             itemPrice = Money.mul qP state.config.itemAMoney
 
              addInventoryOfA : Inventory -> Inventory
              addInventoryOfA  inventory =
@@ -182,10 +193,10 @@ householdBuyGoods_ t e state =
                 Entity.mapInventory subInventoryOfA e_
 
              debitAccount : Account.Account -> Account.Account
-             debitAccount = (\account -> Account.debit (Money.bankTime t) state.config.itemAMoney account)
+             debitAccount = (\account -> Account.debit (Money.bankTime t) itemPrice account)
 
              creditAccount : Account.Account -> Account.Account
-             creditAccount = (\account -> Account.debit (Money.bankTime t) state.config.itemAMoney account)
+             creditAccount = (\account -> Account.debit (Money.bankTime t) itemPrice account)
 
              newHousehold = addInventoryOfEntity e
                 |> Entity.mapAccount debitAccount (Entity.getFiatAccount e)
@@ -203,7 +214,10 @@ householdBuyGoods_ t e state =
                                    (\_ -> newBusiness)
                                    state.businesses
            in
-               {state | households = newHouseholds, businesses = newBusinesses, seed = newSeed}
+               {state |   households = newHouseholds
+                        , businesses = newBusinesses
+                        , seed = newSeed
+                        , totalHouseholdPurchases = state.totalHouseholdPurchases + qP}
 
 
 householdBuyGoods1 : Int -> State -> State

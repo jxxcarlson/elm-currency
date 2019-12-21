@@ -11,6 +11,8 @@ type alias State =
    , seed : Random.Seed
    , randInt : Int
    , config : EngineData.Config
+   , totalHouseholdPurchases : Int
+   , totalHouseholdConsumption : Int
   }
 
 initialState : Int -> State
@@ -21,6 +23,8 @@ initialState k =
      , seed = Random.initialSeed 1234
      , randInt = 4321
      , config = EngineData.config
+     , totalHouseholdPurchases = 0
+     , totalHouseholdConsumption = 0
      }
 
 

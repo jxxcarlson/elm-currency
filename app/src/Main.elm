@@ -61,7 +61,7 @@ init flags =
     ( { input = "App started"
       , output = "App started"
       , counter = 0
-      , state = (State.initialStateWithHouseholds 400 EngineData.config.maxHouseholds )
+      , state = (State.initialStateWithHouseholds 400 EngineData.config.numberOfHouseholds )
       , runState = Paused
       }
     , Cmd.none
@@ -85,7 +85,7 @@ update msg model =
             case model.runState of
                 Running ->
                     ({model | counter = model.counter + 1
-                      , state = Engine.nextState EngineData.config.cycleLength model.counter model.state }, Cmd.none)
+                      , state = Engine.nextState model.counter model.state }, Cmd.none)
                 _ -> (model, Cmd.none)
 
         ToggleRun ->
@@ -101,7 +101,7 @@ update msg model =
              ( {    input = "App started"
                   , output = "App started"
                   , counter = 0
-                  , state = (State.initialStateWithHouseholdsAndSeed model.state.seed EngineData.config.maxHouseholds )
+                  , state = (State.initialStateWithHouseholdsAndSeed model.state.seed EngineData.config.numberOfHouseholds )
                   , runState = Paused
                   }
                 , Cmd.none
@@ -147,7 +147,9 @@ dashboard model =
      , el [] (text <| "low inventory (1) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 1 model.state))
      , el [] (text <| "low inventory (2) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 2 model.state))
      , el [] (text <| "low inventory (3) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 3 model.state))
-
+     , el [] (text <| "Total purchases = " ++ String.fromInt model.state.totalHouseholdPurchases)
+     , el [] (text <| "Total consumed = " ++ String.fromInt model.state.totalHouseholdConsumption)
+     , el [] (text <| "Net consumption = " ++ String.fromInt (model.state.totalHouseholdConsumption - model.state.totalHouseholdPurchases))
      , el [] (text <| "Business inventory = " ++ businessInventory model)
      ]
 

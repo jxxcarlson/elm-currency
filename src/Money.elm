@@ -14,6 +14,7 @@ module Money exposing(
    , createFiatCurrency
    , currency
    , currencyType
+   , mul
    , value
    , valueToString
    )
@@ -174,5 +175,8 @@ currencyType = Money.currencyType
 value : BankTime -> Money -> Value
 value = Money.value
 
+
+mul : Int -> Money -> Money
+mul = Money.mul
 
 

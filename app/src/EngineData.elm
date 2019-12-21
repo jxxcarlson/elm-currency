@@ -39,7 +39,7 @@ type alias Config = {
 
 
   -- Households
-  , maxHouseholds : Int
+  , numberOfHouseholds : Int
   , monthlyItemConsumption : Int
   , householdPurchaseDays : List Int
   , householdMinimumPurchaseAmount : Int
@@ -70,12 +70,12 @@ config =
     , randomPurchaseFraction = 0.1
     , minimumBusinesInventoryOfA = 20
     , minimumPurchaseOfA = 5
-    , maximumPurchaseOfA = 20
+    , maximumPurchaseOfA = 15
 
     -- Households
-    , maxHouseholds = 20
+    , numberOfHouseholds = 20
     , monthlyItemConsumption = 8
-    , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28]
+    , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28] -- not used
     , householdMinimumPurchaseAmount = 4
     , householdMaximumPurchaseAmount = 4
     , householdConsumptionDays = [3, 7, 12, 15, 19, 23, 26, 29]
@@ -167,7 +167,7 @@ initialHouseHoldGeneratorState k maxHouseHolds =
 generateHouseholds : Int -> Int -> List Entity
 generateHouseholds intSeed numberOfHouseholds =
   let
-    i = initialHouseHoldGeneratorState intSeed config.maxHouseholds
+    i = initialHouseHoldGeneratorState intSeed config.numberOfHouseholds
     s = List.foldl newState i (List.range 2  numberOfHouseholds)
   in
     s.households

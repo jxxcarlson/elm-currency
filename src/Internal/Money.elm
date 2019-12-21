@@ -370,3 +370,9 @@ stringFromCurrency (Currency ctype_ name) =
         Fiat -> interpolate "{0} ({1})" [name, "F"]
         Complementary -> interpolate "{0} ({1})" [name, "C"]
 
+
+mul : Int -> Money -> Money
+mul k (Money data) =
+    (Money {data | amount = Cents.mul k data.amount})
+
+
