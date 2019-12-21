@@ -113,7 +113,7 @@ business1 = Entity
    , fiatAccount = Account.empty fiatCurrency
    , inventory = [ModelTypes.setQuantity 20 config.itemA]
    , position = Position 8 (config.gridWidth - 5)
-   , color = Color.rgb 0.8 0 0.3
+   , color = Color.rgba 0.4 0.4 1.0 0.8
   }
   (BusinessCharacteristics { radius = config.businessRadius })
 
@@ -122,7 +122,6 @@ business2 =
    business1
      |> setName "B"
      |> setPosition (config.gridWidth - 5) 5
-     |> setColor 0.8 0 0.3
 
 
 
@@ -139,7 +138,7 @@ initialHousehold =
    , fiatAccount = Account.empty fiatCurrency |> Account.credit (Money.bankTime 0)  (Money.createInfinite fiatCurrency 0 4 )
    , inventory =  [ModelTypes.setQuantity 4 config.itemA]
    , position = Position 20 15
-   , color = Color.rgb 0.8 0.8 0.6
+   , color = Color.rgba 0.8 0.6 0.0 0.8
   }
   (HouseholdCharacteristics { monthlyConsumptionA = 0 })
 

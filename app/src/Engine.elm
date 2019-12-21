@@ -1,15 +1,14 @@
 module Engine exposing (render, nextState)
 
 import Action
-import Entity exposing(Entity)
+import Entity exposing(Entity, TEntity(..))
 import EngineData
 import Random
 import State exposing(State, initialState)
 import Html exposing (Html)
 import Color exposing(Color)
 import CellGrid exposing(CellGrid, Dimensions)
-import CellGrid.Canvas
-import CellGrid.Render exposing (CellStyle)
+import CellGrid.Canvas exposing (CellStyle)
 import Utility
 
 
@@ -19,24 +18,27 @@ config =
 
 
 
-render : State -> Html CellGrid.Render.Msg
+render : State -> Html CellGrid.Canvas.Msg
 render s =
-    CellGrid.Render.asHtml { width = 500, height = 500} cellStyle (toCellGrid s)
+    CellGrid.Canvas.asHtml { width = 500, height = 500} cellStyle (s.households ++ s.businesses)
 
---render2 : State -> Html CellGrid.Canvas.Msg
---render2 s =
---    CellGrid.Canvas.asHtml { width = 580, height = 580} cellStyle s.organisms
---
---
---
---cellStyle : CellStyle Entity
---cellStyle =
---    {  toColor = (\e -> Entity.getColor e)
---     , toRadius = (\e -> 5 )
---     , toPosition = (\o -> Organism.position o)
---     , cellWidth = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
---     , cellHeight = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
---    }
+entityRadius : Entity -> Float
+entityRadius e =
+    case Entity.getType e of
+        THousehold -> 1.5 * (toFloat (1 + Entity.inventoryAmount "AA" e))
+        TShop -> 0.5 * (toFloat (1 + Entity.inventoryAmount "AA" e))
+        _ -> 0
+
+
+
+cellStyle : CellStyle Entity
+cellStyle =
+    {  toColor = (\e -> Entity.getColor e)
+     , toRadius = entityRadius
+     , toPosition = (\e -> Entity.getPosition e)
+     , cellWidth = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
+     , cellHeight = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
+    }
 
 
 toCellGrid : State -> CellGrid Color
@@ -52,16 +54,6 @@ toCellGrid s =
         List.foldl setCell initialGrid (s.businesses ++ s.households)
 
 
-
-
-cellStyle : CellStyle Color
-cellStyle =
-    { toColor = identity
-    , cellWidth = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
-     , cellHeight = EngineData.config.renderWidth / (toFloat EngineData.config.gridWidth)
-    , gridLineColor = Color.rgb 0 0 0.8
-    , gridLineWidth = 0.5
-    }
 
 newRandomNumber : State -> State
 newRandomNumber state =

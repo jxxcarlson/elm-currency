@@ -69,9 +69,10 @@ asSvg { width, height } style list =
             List.map (\o -> renderCell style (style.toPosition o) o) list
                 |> List.foldr (::) []
 
+        g = 0.2
 
         br : Svg Msg
-        br = backGroundRectangle width height (Color.rgba 0.15 0.15  0.20  1.0)
+        br = backGroundRectangle width height (Color.rgba g g (g + 0.05)  1.0)
     in
     Svg.g [] (br :: elements)
 
