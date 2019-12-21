@@ -18,7 +18,8 @@ import ModelTypes exposing (Item(..))
 
 
 type alias Config = {
-   tickLoopInterval : Float
+   title : String
+  , tickLoopInterval : Float
   , cycleLength : Int
   , renderWidth : Float
   , gridWidth : Int
@@ -33,7 +34,7 @@ type alias Config = {
   , itemA : Item
   , itemAMoney : Money
   , randomPurchaseFraction : Float
-  , minimumBusinesInventoryOfA : Int
+  , minimumBusinessInventoryOfA : Int
   , minimumPurchaseOfA : Int
   , maximumPurchaseOfA : Int
 
@@ -44,6 +45,7 @@ type alias Config = {
   , householdPurchaseDays : List Int
   , householdMinimumPurchaseAmount : Int
   , householdMaximumPurchaseAmount : Int
+  , householdLowInventoryThreshold : Int
   , householdConsumptionDays : List Int
   , householdPayDays : List Int
   , periodicHouseHoldFiatIncome : Float
@@ -53,8 +55,9 @@ type alias Config = {
 config : Config
 config =
    {
-      tickLoopInterval = 1000
-    , cycleLength = 30
+      title = "Simple test, Fiat currency"
+     , tickLoopInterval = 100
+    , cycleLength = 360
     , renderWidth = 500
     , gridWidth = 30
      -- Financial
@@ -68,7 +71,7 @@ config =
     , itemA = Item {name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1  }
     , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
     , randomPurchaseFraction = 0.1
-    , minimumBusinesInventoryOfA = 20
+    , minimumBusinessInventoryOfA = 20
     , minimumPurchaseOfA = 5
     , maximumPurchaseOfA = 15
 
@@ -76,8 +79,9 @@ config =
     , numberOfHouseholds = 20
     , monthlyItemConsumption = 8
     , householdPurchaseDays = [1, 5, 9, 13, 17, 21, 25, 28] -- not used
-    , householdMinimumPurchaseAmount = 4
-    , householdMaximumPurchaseAmount = 4
+    , householdMinimumPurchaseAmount = 2
+    , householdMaximumPurchaseAmount = 5
+    , householdLowInventoryThreshold = 2
     , householdConsumptionDays = [3, 7, 12, 15, 19, 23, 26, 29]
     , householdPayDays = [1, 15]
     , periodicHouseHoldFiatIncome = 8.0
@@ -107,7 +111,7 @@ business1 = Entity
    , entityType = TShop
    , complementaryAccount = Account.empty cambiatus
    , fiatAccount = Account.empty fiatCurrency
-   , inventory = []
+   , inventory = [ModelTypes.setQuantity 20 config.itemA]
    , position = Position 8 (config.gridWidth - 5)
    , color = Color.rgb 0.8 0 0.3
   }
@@ -132,8 +136,8 @@ initialHousehold =
   { name = "1"
    , entityType = THousehold
    , complementaryAccount = Account.empty cambiatus
-   , fiatAccount = Account.empty fiatCurrency
-   , inventory = []
+   , fiatAccount = Account.empty fiatCurrency |> Account.credit (Money.bankTime 0)  (Money.createInfinite fiatCurrency 0 4 )
+   , inventory =  [ModelTypes.setQuantity 4 config.itemA]
    , position = Position 20 15
    , color = Color.rgb 0.8 0.8 0.6
   }
@@ -159,7 +163,7 @@ initialHouseHoldGeneratorState k maxHouseHolds =
       {  count = 1
       , seed = seed2
       , existingPositions = existingPositions
-      , households = [initialHousehold]
+      , households = []
       , maxHouseHolds = maxHouseHolds
       }
 
@@ -168,13 +172,13 @@ generateHouseholds : Int -> Int -> List Entity
 generateHouseholds intSeed numberOfHouseholds =
   let
     i = initialHouseHoldGeneratorState intSeed config.numberOfHouseholds
-    s = List.foldl newState i (List.range 1  numberOfHouseholds)
+    s = List.foldl newState i (List.range 0  (numberOfHouseholds - 1))
   in
     s.households
 
 
 initialInventory =
-    [config.itemA |> ModelTypes.setQuantity 4]
+    [config.itemA |> ModelTypes.setQuantity 1]
 
 newState : Int -> HouseHoldGeneratorState -> HouseHoldGeneratorState
 newState k s =

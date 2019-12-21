@@ -88,7 +88,7 @@ businessBuyGoods : State -> State
 businessBuyGoods state =
     let
         lowInventoryBusiness = List.filter
-            (\e -> Entity.inventoryAmount "AA" e < state.config.minimumBusinesInventoryOfA)
+            (\e -> Entity.inventoryAmount "AA" e < state.config.minimumBusinessInventoryOfA)
             state.businesses
     in
     case List.head  lowInventoryBusiness of
@@ -133,6 +133,7 @@ householdBuyGoods t state =
             Entity.getFiatAccount e
               |> Account.value (Money.bankTime t)
               |> Value.intValue
+              |> (\v -> -v)
 
 
         orderedHouseholds = List.sortBy (\e -> sortByAccountValue e) state.households
@@ -143,7 +144,7 @@ householdBuyGoods t state =
         (i, newSeed) = Random.step (Random.int 0 n) state.seed
 
     in
-       case List.Extra.getAt i state.households of
+       case List.Extra.getAt  0 orderedHouseholds of
            Nothing -> {state | seed = newSeed}
            Just e ->
               householdBuyGoods_ t e {state | seed = newSeed }
@@ -167,12 +168,14 @@ householdBuyGoods_ t e state =
                    state.config.householdMinimumPurchaseAmount + round(p * range)
 
              a = randomPurchaseAmount i
-             qS = Inventory.getItemQuantity state.config.itemA (Entity.inventory shop)
-             qH = Inventory.getItemQuantity state.config.itemA (Entity.inventory e)
-             qP = if qH >= 2 then -- Don't purchase itemA if already have enough on hand
+             qS =  Entity.inventoryAmount "AA" shop
+             qH =  Entity.inventoryAmount "AA" e
+             qP = if  qH >= state.config.householdLowInventoryThreshold then -- Don't purchase itemA if already have enough on hand
                      0
-                   else
-                    min a qS  -- can't purchase more than store has on hand
+                  else if a >  qS then -- Can't purchase more than is available in shop
+                      qS
+                  else
+                      a
 
              item = ModelTypes.setQuantity qP state.config.itemA
 

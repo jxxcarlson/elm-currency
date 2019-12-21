@@ -84,8 +84,16 @@ update msg model =
         Tick _ ->
             case model.runState of
                 Running ->
-                    ({model | counter = model.counter + 1
-                      , state = Engine.nextState model.counter model.state }, Cmd.none)
+                  let
+                    (counter, runState) = if model.counter >= model.state.config.cycleLength then
+                         (model.counter, End)
+                      else
+                         (model.counter + 1, Running)
+                  in
+                    ({model | counter = counter
+                      , state = Engine.nextState counter model.state
+                      , runState = runState}
+                      , Cmd.none)
                 _ -> (model, Cmd.none)
 
         ToggleRun ->
@@ -139,18 +147,16 @@ lhColumn model =
 dashboard : Model -> Element msg
 dashboard model =
     column Style.dashboard [
-       el [Font.family [Font.typeface "Courier"]] (text <| clock model.counter)
-     , el [] (text <| "H = " ++ fiatHoldingsDisplay model)
+       el [] (text <| model.state.config.title )
+     , el [] (text <| "Cycle length = " ++ String.fromInt model.state.config.cycleLength)
+     , el [] (text <| clock model.counter)
      , el [] (text <| "Households = " ++ String.fromInt (model.state.households |> List.length))
+     , el [] (text <| "Household acct bal = " ++ fiatHoldingsDisplay model)
      , el [] (text <| "Household inventory = " ++ String.fromInt (Report.householdInventoryOf "AA" model.state))
      , el [] (text <| "[min, max] = " ++ (List.map String.fromInt (Report.minMaxHouseholdInventoryOf "AA" model.state) |> String.join ", "))
-     , el [] (text <| "low inventory (0) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 0 model.state))
-     , el [] (text <| "low inventory (1) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 1 model.state))
-     , el [] (text <| "low inventory (2) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 2 model.state))
-     , el [] (text <| "low inventory (3) = " ++ String.fromInt (Report.numberOfInventoriesBelow "AA" 3 model.state))
      , el [] (text <| "Total purchases = " ++ String.fromInt model.state.totalHouseholdPurchases)
      , el [] (text <| "Total consumed = " ++ String.fromInt model.state.totalHouseholdConsumption)
-     , el [] (text <| "Net consumption = " ++ String.fromInt (model.state.totalHouseholdConsumption - model.state.totalHouseholdPurchases))
+     , el [] (text <| "Net purchases = " ++ String.fromInt ( model.state.totalHouseholdPurchases - model.state.totalHouseholdConsumption))
      , el [] (text <| "Business inventory = " ++ businessInventory model)
      ]
 
@@ -174,11 +180,11 @@ fiatHoldingsDisplay model =
 clock : Int -> String
 clock k =
     let
-        day = k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 0 ' '
+        day = k |> String.fromInt |> String.padLeft 0 ' '
         month = k // 30 |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
-        dayInMonth = modBy 30 k |> (\x -> x + 1) |> String.fromInt |> String.padLeft 2 '0'
+        dayInMonth = modBy 30 k |> String.fromInt |> String.padLeft 2 '0'
     in
-    interpolate "t = {0}: {1}/{2}" [day, month, dayInMonth]
+    interpolate "t = {0}: {1}/{2}" [day, dayInMonth, month]
 
 displayState : Model -> Element Msg
 displayState model =
