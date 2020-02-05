@@ -93,7 +93,7 @@ config1 =
     -- Financial
     , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
-    , complementaryCurrency = complementaryCurrency
+    , complementaryCurrency = cambiatus
     , complementaryCurrencyExpiration = Finite (Money.bankTime 360)
     , educationPaymentPerCycle = 20.0
 
@@ -136,7 +136,7 @@ config2 =
     -- Financial
     , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
-    , complementaryCurrency = complementaryCurrency
+    , complementaryCurrency = cambiatus
     , complementaryCurrencyExpiration = Finite (Money.bankTime 360)
     , educationPaymentPerCycle = 1.0
 
@@ -173,10 +173,6 @@ cambiatus =
 
 fiatCurrency =
     Money.createFiatCurrency "Real"
-
-
-complementaryCurrency =
-    Money.createCompCurrency "Greenbucks"
 
 
 supplier1 : Config -> Entity

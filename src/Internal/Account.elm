@@ -1,36 +1,43 @@
-module Internal.Account exposing (..)
+module Internal.Account exposing (Account(..), create, createWithCurrency, credit, currency, currencyType, debit, empty, ensureValid, merge, simplify, transactions, value, valueInCents, valueInCents_)
 
-import Internal.Types  exposing(BankTime, Currency, CurrencyType, Money, Cents(..), Value(..))
 import Internal.Money as Money
+import Internal.Types exposing (BankTime, Cents(..), Currency, CurrencyType, Money, Value(..))
 import Internal.Utility as Utility
 import Maybe.Extra
 
-{-| An account is a list of Money values for  given currency.
+
+{-| An account is a list of Money values for given currency.
 Such a structures needed, since different values
 may have different expiration periods, etc.
 
 It is assumed that all Money values are denominated
-in the same Currency.  This restriction is enforced
+in the same Currency. This restriction is enforced
 by the functions which operate on accounts.
+
 -}
-type  Account =
-      Account  { currency: Currency, transactions : List Money }
+type Account
+    = Account { currency : Currency, transactions : List Money }
+
 
 merge : List Account -> Maybe Account
 merge list =
-    case (Maybe.map currency (List.head list)) of
+    case Maybe.map currency (List.head list) of
         Just currency_ ->
             Just <| Account { currency = currency_, transactions = List.concat (List.map transactions list) }
-        Nothing -> Nothing
+
+        Nothing ->
+            Nothing
 
 
 currency : Account -> Currency
 currency (Account data) =
     data.currency
 
+
 currencyType : Account -> CurrencyType
 currencyType account =
     account |> currency |> Money.ctype
+
 
 transactions : Account -> List Money
 transactions (Account data) =
@@ -51,14 +58,17 @@ transactions (Account data) =
 -}
 create : List Money -> Maybe Account
 create list =
-   case List.head list of
-       Nothing -> Nothing
-       Just m ->
-           case Money.sameCurrency list of
-               False -> Nothing
-               True -> Just <| Account {currency = Money.currency m, transactions = list}
+    case List.head list of
+        Nothing ->
+            Nothing
 
+        Just m ->
+            case Money.sameCurrency list of
+                False ->
+                    Nothing
 
+                True ->
+                    Just <| Account { currency = Money.currency m, transactions = list }
 
 
 {-|
@@ -83,21 +93,25 @@ create list =
 
     createWithCurrency Internal.Money.greenBucks [m1] |> value (Internal.Money.bankTime 366) |> Internal.Money.valueToString
     --> "0 Greenbucks (C)"
+
 -}
 createWithCurrency : Currency -> List Money -> Account
 createWithCurrency currency_ list =
     let
-       currencies = List.map Money.currency list
-     in
-     case Utility.andOfList (List.map (\c -> c == currency_) currencies) of
-         True -> Account {currency = currency_, transactions = list}
-         False -> empty currency_
+        currencies =
+            List.map Money.currency list
+    in
+    case Utility.andOfList (List.map (\c -> c == currency_) currencies) of
+        True ->
+            Account { currency = currency_, transactions = list }
 
+        False ->
+            empty currency_
 
 
 empty : Currency -> Account
 empty currency_ =
-    Account {currency = currency_, transactions = []}
+    Account { currency = currency_, transactions = [] }
 
 
 {-|
@@ -128,14 +142,15 @@ empty currency_ =
 
 -}
 value : BankTime -> Account -> Value
-value  bankTime_ ((Account acct) as account)=
-  account
-    |> ensureValid bankTime_
-    |> valueInCents
-    |> (\v -> Value acct.currency v)
+value bankTime_ ((Account acct) as account) =
+    account
+        |> ensureValid bankTime_
+        |> valueInCents
+        |> (\v -> Value acct.currency v)
 
 
 {-|
+
     import Internal.Types exposing(..)
     import Internal.Money
 
@@ -154,10 +169,12 @@ value  bankTime_ ((Account acct) as account)=
 
     credit (BankTime 0) c1 acct
     --> acct2
+
 -}
 credit : BankTime -> Money -> Account -> Account
 credit bt m (Account acct) =
-    simplify bt (Account { acct | transactions = m::acct.transactions})
+    simplify bt (Account { acct | transactions = m :: acct.transactions })
+
 
 {-|
 
@@ -178,11 +195,11 @@ credit bt m (Account acct) =
 
     debit (BankTime 0) c1 acct
     --> acct2
+
 -}
 debit : BankTime -> Money -> Account -> Account
 debit bt m (Account acct) =
-   simplify bt (Account { acct | transactions = (Money.negate m)::acct.transactions})
-
+    simplify bt (Account { acct | transactions = Money.negate m :: acct.transactions })
 
 
 {-|
@@ -211,45 +228,48 @@ debit bt m (Account acct) =
 
     simplify (BankTime 0) (Account {currency = Internal.Money.greenBucks, transactions = [c1,c2, c4]})
     --> Account {currency = Internal.Money.greenBucks, transactions = [c3, c4]}
+
 -}
 simplify : BankTime -> Account -> Account
 simplify bt ((Account acct) as account) =
-   let
-       (Account acct2) = ensureValid bt account
-       groups = Money.group acct2.transactions
-       transactions_ = List.map Money.consolidate groups
-         |> Maybe.Extra.values
-   in
-     Account {currency = acct.currency, transactions = transactions_}
+    let
+        (Account acct2) =
+            ensureValid bt account
 
+        groups =
+            Money.group acct2.transactions
+
+        transactions_ =
+            List.map Money.consolidate groups
+                |> Maybe.Extra.values
+    in
+    Account { currency = acct.currency, transactions = transactions_ }
 
 
 {-|
+
     import Internal.Types exposing(..)
     import Internal.Money
 
-   c1 : Money
-   c1 =  Money {amount = Cents 123, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+c1 : Money
+c1 = Money {amount = Cents 123, currency = Internal.Money.greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
 
-   emptyAcct : Account
-   emptyAcct = Account  { currency = Internal.Money.greenBucks, transactions = []}
+emptyAcct : Account
+emptyAcct = Account { currency = Internal.Money.greenBucks, transactions = []}
 
-   acct : Account
-   acct = Account  { currency = Internal.Money.greenBucks, transactions = [c1]})
+acct : Account
+acct = Account { currency = Internal.Money.greenBucks, transactions = [c1]})
 
-   ensureValid (BankTime 10) acct
-   --> acct
+ensureValid (BankTime 10) acct
+--> acct
 
-   ensureValid (BankTime 101 acct
-    --> emptyAcct
+ensureValid (BankTime 101 acct
+--> emptyAcct
 
 -}
 ensureValid : BankTime -> Account -> Account
 ensureValid bankTime_ (Account acct) =
-    Account {currency = acct.currency, transactions = List.filter (Money.isValid bankTime_) acct.transactions}
-
-
-
+    Account { currency = acct.currency, transactions = List.filter (Money.isValid bankTime_) acct.transactions }
 
 
 {-|
@@ -285,13 +305,14 @@ valueInCents (Account acct) =
 
 
 valueInCents_ : List Money -> Cents
-valueInCents_ list  =
-  case list of
-      [] -> (Cents 0)
-      _ ->
-         list
-            |> List.map Money.amount
-            |> List.map (\(Cents k) -> k)
-            |> List.sum
-            |> (\s -> Cents s)
+valueInCents_ list =
+    case list of
+        [] ->
+            Cents 0
 
+        _ ->
+            list
+                |> List.map Money.amount
+                |> List.map (\(Cents k) -> k)
+                |> List.sum
+                |> (\s -> Cents s)

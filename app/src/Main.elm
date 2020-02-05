@@ -174,7 +174,10 @@ dashboard model =
         , el [] (text <| "Total purchases = " ++ String.fromInt model.state.totalHouseholdPurchases)
         , el [] (text <| "Total consumed = " ++ String.fromInt model.state.totalHouseholdConsumption)
         , el [] (text <| "Net purchases = " ++ String.fromInt (model.state.totalHouseholdPurchases - model.state.totalHouseholdConsumption))
-        , el [] (text <| "Business inventory = " ++ businessInventory model)
+        , el [] (text <| "------------------------------")
+        , el [] (text <| "Business inventories = " ++ businessInventory model)
+        , el [] (text <| "Fiat balances = " ++ fiatBalances model)
+        , el [] (text <| "CC balances = " ++ ccBalances model)
         ]
 
 
@@ -195,6 +198,18 @@ displayLog state =
 businessInventory : Model -> String
 businessInventory model =
     List.map String.fromInt (Report.businessInventoryOf "AA" model.state)
+        |> String.join ", "
+
+
+fiatBalances : Model -> String
+fiatBalances model =
+    List.map String.fromFloat (Report.fiatBalanceOf (Money.bankTime model.state.tick) model.state.businesses)
+        |> String.join ", "
+
+
+ccBalances : Model -> String
+ccBalances model =
+    List.map String.fromFloat (Report.ccBalanceOf (Money.bankTime model.state.tick) model.state.businesses)
         |> String.join ", "
 
 

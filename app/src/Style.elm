@@ -22,10 +22,10 @@ mainColumn =
 
 dashboard =
     [ Background.color (rgb255 200 200 200)
-    , paddingXY 12 8
+    , paddingXY 12 18
     , width (px 300)
     , height (px 570)
-    , spacing 10
+    , spacing 6
     , Font.size 14
     , Font.family [ Font.typeface "Courier" ]
     ]
@@ -33,7 +33,7 @@ dashboard =
 
 log =
     [ Background.color (rgb255 200 200 200)
-    , paddingXY 12 8
+    , paddingXY 12 18
     , width (px 300)
     , height (px 570)
     , spacing 3
