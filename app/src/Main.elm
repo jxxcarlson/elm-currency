@@ -150,18 +150,12 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column Style.mainColumn
         [ title "Simulator II"
-        , row [ centerX ]
-            [ lhColumn model
+        , row [ centerX, spacing 10 ]
+            [ displayState model
+            , displayLog model.state
             , dashboard model
             ]
         , footer model
-        ]
-
-
-lhColumn : Model -> Element Msg
-lhColumn model =
-    column Style.lhColumn
-        [ displayState model
         ]
 
 
@@ -169,8 +163,10 @@ dashboard : Model -> Element msg
 dashboard model =
     column Style.dashboard
         [ el [] (text <| model.state.config.title)
+        , el [] (text <| "------------------------------")
         , el [] (text <| "Cycle length = " ++ String.fromInt model.state.config.cycleLength)
         , el [] (text <| clock model.counter)
+        , el [] (text <| "------------------------------")
         , el [] (text <| "Households = " ++ String.fromInt (model.state.households |> List.length))
         , el [] (text <| "Household acct bal = " ++ fiatHoldingsDisplay model)
         , el [] (text <| "Household inventory = " ++ String.fromInt (Report.householdInventoryOf "AA" model.state))
@@ -179,7 +175,6 @@ dashboard model =
         , el [] (text <| "Total consumed = " ++ String.fromInt model.state.totalHouseholdConsumption)
         , el [] (text <| "Net purchases = " ++ String.fromInt (model.state.totalHouseholdPurchases - model.state.totalHouseholdConsumption))
         , el [] (text <| "Business inventory = " ++ businessInventory model)
-        , el [] (text <| "------------------")
         ]
 
 
@@ -189,9 +184,12 @@ displayLog state =
         displayItem : String -> Element msg
         displayItem str =
             el [] (text str)
+
+        log =
+            "Log" :: "--------------------------" :: List.take 30 state.log
     in
-    List.map displayItem (List.take 20 state.log)
-        |> column [ Background.color Style.lightColor, padding 25, Font.size 12, alignTop, width (px 150) ]
+    List.map displayItem log
+        |> column Style.log
 
 
 businessInventory : Model -> String
@@ -201,7 +199,7 @@ businessInventory model =
 
 
 footer model =
-    row [ paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width fill, height (px 50) ]
+    row [ alignBottom, paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width fill, height (px 40) ]
         [ resetButton model
         , runButton model
         , el [ Font.family [ Font.typeface "Courier" ] ] (text <| clock model.counter)
@@ -240,13 +238,12 @@ displayState model =
             model.state
             |> Element.html
             |> Element.map CellGrid
-        , displayLog model.state
         ]
 
 
 title : String -> Element msg
 title str =
-    row [ centerX, Font.bold ] [ text str ]
+    row [ centerX, Font.bold, paddingEach { top = 40, bottom = 0, left = 0, right = 0 } ] [ text str ]
 
 
 outputDisplay : Model -> Element msg

@@ -18,7 +18,7 @@ config =
 
 render : Config -> State -> Html CellGrid.Canvas.Msg
 render config_ s =
-    CellGrid.Canvas.asHtml { width = 500, height = 500 } (cellStyle config_) (s.households ++ s.businesses)
+    CellGrid.Canvas.asHtml { width = round config_.renderWidth, height = round config_.renderWidth } (cellStyle config_) (s.households ++ s.businesses)
 
 
 entityRadius : Entity -> Float
