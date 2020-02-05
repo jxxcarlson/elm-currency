@@ -127,9 +127,14 @@ update msg model =
                     ( { model | runState = End }, Cmd.none )
 
         Reset ->
+            let
+                config =
+                    model.configuration
+            in
             ( { model
-                | state = State.initialStateWithHouseholdsAndSeed model.configuration model.state.seed model.configuration.numberOfHouseholds
+                | state = State.configure config 400
                 , runState = Paused
+                , counter = 0
               }
             , Cmd.none
             )
