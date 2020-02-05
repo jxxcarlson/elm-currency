@@ -3,10 +3,12 @@ module EngineData exposing
     , business1
     , business2
     , businesses
+    , educator1
+    , educators
     , generateHouseholds
     , getConfiguration
     , initialHousehold
-    , supplier
+    , supplier1
     , suppliers
     )
 
@@ -99,6 +101,7 @@ config1 =
     , minimumPurchaseOfA = 5
     , maximumPurchaseOfA = 15
 
+    -- Educators
     -- Households
     , numberOfHouseholds = 20
     , monthlyItemConsumption = 8
@@ -159,18 +162,32 @@ fiatCurrency =
     Money.createFiatCurrency "Real"
 
 
-supplier : Config -> Entity
-supplier config =
+supplier1 : Config -> Entity
+supplier1 config =
     Entity
-        { name = "X"
+        { name = "S1"
         , entityType = TSupplier
         , complementaryAccount = Account.empty cambiatus
         , fiatAccount = Account.empty fiatCurrency
         , inventory = []
-        , position = Position (config.gridWidth - 5) (config.gridWidth - 5) -- Position (config.gridWidth - 5) (config.gridWidth - 5)
-        , color = Color.rgb 0.4 0.4 1
+        , position = Position 18 (config.gridWidth - 5)
+        , color = Color.rgba 1.0 0.3 1.0 0.8
         }
-        (BusinessCharacteristics { radius = config.businessRadius })
+        (BusinessCharacteristics { radius = 10 })
+
+
+educator1 : Config -> Entity
+educator1 config =
+    Entity
+        { name = "E"
+        , entityType = TEducator
+        , complementaryAccount = Account.empty cambiatus
+        , fiatAccount = Account.empty fiatCurrency
+        , inventory = []
+        , position = Position 12 4 -- Position (config.gridWidth - 5) (config.gridWidth - 5)
+        , color = Color.rgba 0.2 0.8 0.2 0.8
+        }
+        (BusinessCharacteristics { radius = 30 })
 
 
 business1 : Config -> Entity
@@ -198,7 +215,11 @@ businesses config =
 
 
 suppliers config =
-    [ supplier config ]
+    [ supplier1 config ]
+
+
+educators config =
+    [ educator1 config ]
 
 
 initialHousehold : Config -> Entity

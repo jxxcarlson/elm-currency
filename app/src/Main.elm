@@ -73,7 +73,7 @@ init flags =
       , counter = 0
       , configurationIndex = 0
       , configuration = config
-      , state = State.initialStateWithHouseholds config 400 (EngineData.getConfiguration 0).numberOfHouseholds
+      , state = State.configure config 400
       , runState = Paused
       }
     , Cmd.none

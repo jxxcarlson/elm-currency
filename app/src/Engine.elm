@@ -18,7 +18,9 @@ config =
 
 render : Config -> State -> Html CellGrid.Canvas.Msg
 render config_ s =
-    CellGrid.Canvas.asHtml { width = round config_.renderWidth, height = round config_.renderWidth } (cellStyle config_) (s.households ++ s.businesses)
+    CellGrid.Canvas.asHtml { width = round config_.renderWidth, height = round config_.renderWidth }
+        (cellStyle config_)
+        (s.households ++ s.businesses ++ s.suppliers ++ s.educators)
 
 
 entityRadius : Entity -> Float
@@ -30,8 +32,11 @@ entityRadius e =
         TShop ->
             0.5 * toFloat (1 + Entity.inventoryAmount "AA" e)
 
-        _ ->
-            0
+        TSupplier ->
+            15
+
+        TEducator ->
+            15
 
 
 cellStyle : Config -> CellStyle Entity

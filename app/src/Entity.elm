@@ -1,33 +1,38 @@
-module Entity exposing (Entity(..), Common, Characteristics(..)
-  , BusinessCharRecord
-  , HouseholdCharRecord
-  , TEntity(..)
-  , complementaryAccount
-  , fiatAccount
-  , getPosition
-  , distance
-  , addToInventory
-  , getFiatAccount
-  , setFiatAccount
-  , inventoryAmount
-  , inventorySize
-  , inventory
-  , fiatHoldingsOEntities
-  , updateAccount
-  , mapAccount
-  , setCCAccount
-  , getCCAccount
-  , mapInventory
-  , getType
-  , getName
-  , setName
-  , setPosition
-  , getColor
-  , selectAccount
-  , setInventory
-  , setColor)
+module Entity exposing
+    ( BusinessCharRecord
+    , Characteristics(..)
+    , Common
+    , Entity(..)
+    , HouseholdCharRecord
+    , TEntity(..)
+    , addToInventory
+    , complementaryAccount
+    , distance
+    , fiatAccount
+    , fiatHoldingsOEntities
+    , getCCAccount
+    , getColor
+    , getFiatAccount
+    , getName
+    , getPosition
+    , getType
+    , inventory
+    , inventoryAmount
+    , inventorySize
+    , mapAccount
+    , mapInventory
+    , selectAccount
+    , setCCAccount
+    , setColor
+    , setFiatAccount
+    , setInventory
+    , setName
+    , setPosition
+    , updateAccount
+    )
 
 {-|
+
      business : Entity
      business = Entity
         { name = "AAA Bakery"
@@ -38,131 +43,163 @@ module Entity exposing (Entity(..), Common, Characteristics(..)
         , color = Color.rgb 1 0 0
        }
        (BusinessCharacteristics { radius = 10.0 })
+
 -}
 
-import CellGrid exposing(Position)
-import Color exposing(Color)
-import Money exposing(Money)
-import Account exposing(Account)
-import Internal.Types exposing(CurrencyType(..))
+import Account exposing (Account)
+import CellGrid exposing (Position)
+import Color exposing (Color)
+import Internal.Types exposing (CurrencyType(..))
 import Inventory
 import ModelTypes exposing (Inventory, Item)
+import Money exposing (Money)
 
-type Entity = Entity Common Characteristics
+
+type Entity
+    = Entity Common Characteristics
 
 
-type alias Common = {
-      name:  String
+type alias Common =
+    { name : String
     , entityType : TEntity
     , complementaryAccount : Account
     , fiatAccount : Account
     , inventory : Inventory
     , position : Position
     , color : Color
-   }
+    }
 
 
 inventory : Entity -> List Item
 inventory (Entity common _) =
     common.inventory
 
+
 mapInventory : (Inventory -> Inventory) -> Entity -> Entity
 mapInventory f (Entity common characterstics) =
-    Entity {common | inventory = f common.inventory } characterstics
+    Entity { common | inventory = f common.inventory } characterstics
 
 
 complementaryAccount : Entity -> Account
 complementaryAccount (Entity common _) =
     common.complementaryAccount
 
+
 fiatAccount : Entity -> Account
 fiatAccount (Entity common _) =
     common.fiatAccount
 
+
 selectAccount : Money -> Entity -> Maybe Account
 selectAccount money (Entity common _) =
-     if Money.currency money == Account.currency common.fiatAccount then Just <| common.fiatAccount
-             else if Money.currency money == Account.currency common.complementaryAccount then Just <|common.complementaryAccount
-             else Nothing
+    if Money.currency money == Account.currency common.fiatAccount then
+        Just <| common.fiatAccount
+
+    else if Money.currency money == Account.currency common.complementaryAccount then
+        Just <| common.complementaryAccount
+
+    else
+        Nothing
 
 
+type TEntity
+    = TShop
+    | TSupplier
+    | THousehold
+    | TEducator
 
-type TEntity = TShop | TSupplier | THousehold
 
-type Characteristics =
-    BusinessCharacteristics BusinessCharRecord | HouseholdCharacteristics HouseholdCharRecord
+type Characteristics
+    = BusinessCharacteristics BusinessCharRecord
+    | HouseholdCharacteristics HouseholdCharRecord
+
 
 type alias BusinessCharRecord =
-   {
-      radius: Float
+    { radius : Float
+    }
 
-   }
 
-type alias HouseholdCharRecord = {
-  monthlyConsumptionA : Int
- }
+type alias HouseholdCharRecord =
+    { monthlyConsumptionA : Int
+    }
 
 
 fiatHoldingsOEntities : Int -> List Entity -> Maybe Money.Value
 fiatHoldingsOEntities t list =
-  let
-    mergedAccounts = list
-      |> List.map getFiatAccount
-      |> Account.merge
-  in
+    let
+        mergedAccounts =
+            list
+                |> List.map getFiatAccount
+                |> Account.merge
+    in
     case mergedAccounts of
-        Just accounts -> Just <| Account.value (Money.bankTime t) accounts
-        Nothing -> Nothing
+        Just accounts ->
+            Just <| Account.value (Money.bankTime t) accounts
+
+        Nothing ->
+            Nothing
 
 
 positionDistance : Position -> Position -> Float
 positionDistance p q =
-  let
-      deltaX = p.row - q.row |> toFloat
-      deltaY = p.column - q.column |> toFloat
-  in
+    let
+        deltaX =
+            p.row - q.row |> toFloat
+
+        deltaY =
+            p.column - q.column |> toFloat
+    in
     sqrt (deltaX * deltaX + deltaY * deltaY)
 
 
 distance : Entity -> Entity -> Float
-distance (Entity common1 _)  (Entity common2 _)=
-   positionDistance common1.position common2.position
-
-
+distance (Entity common1 _) (Entity common2 _) =
+    positionDistance common1.position common2.position
 
 
 getFiatAccount : Entity -> Account
 getFiatAccount (Entity common _) =
     common.fiatAccount
 
+
 setFiatAccount : Account -> Entity -> Entity
 setFiatAccount account (Entity common char) =
-    Entity { common | fiatAccount = account} char
+    Entity { common | fiatAccount = account } char
+
 
 getCCAccount : Entity -> Account
 getCCAccount (Entity common _) =
     common.complementaryAccount
 
+
 setCCAccount : Account -> Entity -> Entity
 setCCAccount account (Entity common char) =
-    Entity { common | complementaryAccount = account} char
+    Entity { common | complementaryAccount = account } char
 
 
 updateAccount : Account -> Entity -> Entity
 updateAccount account e =
     case Account.currencyType account of
-        Fiat -> setFiatAccount account e
-        Complementary -> setCCAccount account e
+        Fiat ->
+            setFiatAccount account e
+
+        Complementary ->
+            setCCAccount account e
+
 
 mapAccount : (Account -> Account) -> Account -> Entity -> Entity
 mapAccount f account e =
     case Account.currencyType account of
-        Fiat -> setFiatAccount (f account) e
-        Complementary -> setCCAccount  (f account) e
+        Fiat ->
+            setFiatAccount (f account) e
+
+        Complementary ->
+            setCCAccount (f account) e
+
 
 setInventory : Inventory -> Entity -> Entity
 setInventory inventory_ (Entity common characteristics) =
-    (Entity {common | inventory = inventory_} characteristics)
+    Entity { common | inventory = inventory_ } characteristics
 
 
 addToInventory : Item -> Entity -> Entity
@@ -174,22 +211,25 @@ getName : Entity -> String
 getName (Entity common _) =
     common.name
 
+
 setName : String -> Entity -> Entity
 setName name (Entity common characteristics) =
     Entity { common | name = name } characteristics
 
-getType : Entity ->TEntity
+
+getType : Entity -> TEntity
 getType (Entity common _) =
     common.entityType
 
+
 getPosition : Entity -> Position
-getPosition   (Entity common characteristics) =
+getPosition (Entity common characteristics) =
     common.position
+
 
 setPosition : Int -> Int -> Entity -> Entity
 setPosition i j (Entity common characteristics) =
     Entity { common | position = Position i j } characteristics
-
 
 
 getColor : Entity -> Color
@@ -197,17 +237,18 @@ getColor (Entity common characteristics) =
     common.color
 
 
-setColor : Float -> Float -> Float ->  Entity -> Entity
+setColor : Float -> Float -> Float -> Entity -> Entity
 setColor r g b (Entity common characteristics) =
     Entity { common | color = Color.rgb r g b } characteristics
 
 
 inventorySize : Entity -> Int
 inventorySize (Entity common _) =
-       List.length common.inventory
+    List.length common.inventory
+
 
 inventoryAmount : String -> Entity -> Int
 inventoryAmount itemName_ e =
     List.filter (\i -> ModelTypes.itemName i == itemName_) (inventory e)
-      |> List.map ModelTypes.itemQuantity
-      |> List.sum
+        |> List.map ModelTypes.itemQuantity
+        |> List.sum
