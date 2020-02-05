@@ -54,6 +54,7 @@ type alias Config =
     , numberOfTimesToWatchContent : Int
     , businessRadius : Float
     , itemPrice : Money.Value
+    , itemCost : Float
     , itemA : Item
     , itemAMoney : Money
     , randomPurchaseFraction : Float
@@ -102,6 +103,7 @@ config1 =
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
+    , itemCost = 1.0
     , itemA = Item { name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1 }
     , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
     , randomPurchaseFraction = 0.1
@@ -145,6 +147,7 @@ config2 =
     , numberOfTimesToWatchContent = 1
     , businessRadius = 10.0
     , itemPrice = Money.createValue fiatCurrency 2
+    , itemCost = 1.0
     , itemA = Item { name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1 }
     , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
     , randomPurchaseFraction = 0.1

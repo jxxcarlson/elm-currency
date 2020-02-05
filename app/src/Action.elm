@@ -11,6 +11,7 @@ import Account
 import ActionHelper as AH
 import EngineData exposing (Config)
 import Entity exposing (Entity)
+import Internal.Types exposing (Expiration(..))
 import Inventory
 import List.Extra
 import ModelTypes exposing (Inventory)
@@ -157,8 +158,12 @@ businessBuyGoods state =
                 item =
                     ModelTypes.setQuantity a state.config.itemA
 
+                config =
+                    state.config
+
                 newBusiness =
                     Entity.addToInventory item business
+                        |> AH.creditEntity config state.tick config.fiatCurrency Infinite -1
 
                 newBusinesses =
                     List.Extra.updateIf
@@ -282,7 +287,7 @@ householdBuyGoods_ t e state =
 
                 creditAccount : Account.Account -> Account.Account
                 creditAccount =
-                    \account -> Account.debit (Money.bankTime t) itemPrice account
+                    \account -> Account.credit (Money.bankTime t) itemPrice account
 
                 newHousehold =
                     addInventoryOfEntity e
@@ -303,12 +308,16 @@ householdBuyGoods_ t e state =
                         (\e1 -> Entity.getName e1 == Entity.getName shop)
                         (\_ -> newBusiness)
                         state.businesses
+
+                logString =
+                    "HB " ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
             in
             { state
                 | households = newHouseholds
                 , businesses = newBusinesses
                 , seed = newSeed
                 , totalHouseholdPurchases = state.totalHouseholdPurchases + qP
+                , log = logItem state logString
             }
 
 
