@@ -24,6 +24,7 @@ import Entity
         , setName
         , setPosition
         )
+import Internal.Types exposing (Expiration(..))
 import List.Extra
 import ModelTypes exposing (Item(..))
 import Money exposing (Money, Value)
@@ -45,6 +46,8 @@ type alias Config =
     -- Financial
     , fiatCurrency : Money.Currency
     , fiatCurrencyName : String
+    , complementaryCurrency : Money.Currency
+    , complementaryCurrencyExpiration : Expiration
 
     -- Businesses
     , contentReleaseInterval : Int
@@ -57,6 +60,8 @@ type alias Config =
     , minimumBusinessInventoryOfA : Int
     , minimumPurchaseOfA : Int
     , maximumPurchaseOfA : Int
+    , educationalContentCycle : Int
+    , educationPaymentPerCycle : Float
 
     -- Households
     , numberOfHouseholds : Int
@@ -80,7 +85,7 @@ configurations =
 config1 : Config
 config1 =
     { title = "1. Simple test, Fiat currency"
-    , tickLoopInterval = 0.3 * 1000
+    , tickLoopInterval = 1 * 1000
     , cycleLength = 360
     , renderWidth = 573
     , gridWidth = 30
@@ -88,6 +93,9 @@ config1 =
     -- Financial
     , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
+    , complementaryCurrency = complementaryCurrency
+    , complementaryCurrencyExpiration = Finite (Money.bankTime 360)
+    , educationPaymentPerCycle = 20.0
 
     -- Businesses
     , contentReleaseInterval = 15
@@ -100,6 +108,7 @@ config1 =
     , minimumBusinessInventoryOfA = 20
     , minimumPurchaseOfA = 5
     , maximumPurchaseOfA = 15
+    , educationalContentCycle = 30
 
     -- Educators
     -- Households
@@ -127,6 +136,9 @@ config2 =
     -- Financial
     , fiatCurrency = fiatCurrency
     , fiatCurrencyName = "Real"
+    , complementaryCurrency = complementaryCurrency
+    , complementaryCurrencyExpiration = Finite (Money.bankTime 360)
+    , educationPaymentPerCycle = 1.0
 
     -- Businesses
     , contentReleaseInterval = 15
@@ -139,6 +151,7 @@ config2 =
     , minimumBusinessInventoryOfA = 20
     , minimumPurchaseOfA = 5
     , maximumPurchaseOfA = 15
+    , educationalContentCycle = 30
 
     -- Households
     , numberOfHouseholds = 20
@@ -162,6 +175,10 @@ fiatCurrency =
     Money.createFiatCurrency "Real"
 
 
+complementaryCurrency =
+    Money.createCompCurrency "Greenbucks"
+
+
 supplier1 : Config -> Entity
 supplier1 config =
     Entity
@@ -170,7 +187,7 @@ supplier1 config =
         , complementaryAccount = Account.empty cambiatus
         , fiatAccount = Account.empty fiatCurrency
         , inventory = []
-        , position = Position 18 (config.gridWidth - 5)
+        , position = Position 1 1
         , color = Color.rgba 1.0 0.3 1.0 0.8
         }
         (BusinessCharacteristics { radius = 10 })
@@ -184,7 +201,7 @@ educator1 config =
         , complementaryAccount = Account.empty cambiatus
         , fiatAccount = Account.empty fiatCurrency
         , inventory = []
-        , position = Position 12 4 -- Position (config.gridWidth - 5) (config.gridWidth - 5)
+        , position = Position (config.gridWidth - 1) (config.gridWidth - 1)
         , color = Color.rgba 0.2 0.8 0.2 0.8
         }
         (BusinessCharacteristics { radius = 30 })

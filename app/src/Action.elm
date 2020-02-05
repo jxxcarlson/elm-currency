@@ -1,4 +1,11 @@
-module Action exposing (businessBuyGoods, consumeA, dailyActivity, householdBuyGoods, payHouseholds)
+module Action exposing
+    ( businessBuyGoods
+    , consumeA
+    , dailyActivity
+    , householdBuyGoods
+    , payHouseholds
+    , readEducationalContent
+    )
 
 import Account
 import ActionHelper as AH
@@ -28,7 +35,7 @@ payHouseholds config t state =
     if List.member (modBy 30 t) state.config.householdPayDays then
         let
             households =
-                AH.creditHouseHolds config t config.periodicHouseHoldFiatIncome state.households
+                AH.creditHouseHolds config t state.households
         in
         { state | households = households }
 
@@ -77,16 +84,40 @@ initializeSupplier state =
     state
 
 
+readEducationalContent : State -> State
+readEducationalContent state =
+    case modBy state.config.educationalContentCycle state.tick == 3 of
+        False ->
+            state
 
---consumeA1 : Int -> State -> State
---consumeA1 t state =
---    Utility.applyToList consumeAForHouseHold state.households state
---      |> Maybe.withDefault state
---
---
---consumeAForHouseHold : Entity -> State -> State
---consumeAForHouseHold houseHold state =
---    state
+        True ->
+            let
+                config =
+                    state.config
+
+                exp =
+                    config.complementaryCurrencyExpiration
+
+                amount =
+                    config.educationPaymentPerCycle
+
+                earnCC : Entity -> Entity
+                earnCC e =
+                    AH.creditEntity config state.tick config.complementaryCurrency exp amount e
+
+                newBusinesses =
+                    List.map earnCC state.businesses
+
+                n =
+                    List.length newBusinesses
+
+                amountEarned =
+                    toFloat n * amount
+
+                logString =
+                    "Earn CC for " ++ String.fromInt n ++ " biz: " ++ String.fromFloat amountEarned
+            in
+            { state | businesses = newBusinesses, log = logItem state logString }
 
 
 businessBuyGoods : State -> State

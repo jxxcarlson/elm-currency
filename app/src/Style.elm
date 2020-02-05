@@ -34,7 +34,7 @@ dashboard =
 log =
     [ Background.color (rgb255 200 200 200)
     , paddingXY 12 8
-    , width (px 250)
+    , width (px 300)
     , height (px 570)
     , spacing 3
     , Font.size 14

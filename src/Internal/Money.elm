@@ -1,63 +1,116 @@
-module Internal.Money exposing (..)
-
+module Internal.Money exposing
+    ( amount
+    , bankTime
+    , consolidate
+    , createCompCurrency
+    , createCurrency
+    , createFiatCurrency
+    , createFinite
+    , createInfinite
+    , ctype
+    , currency
+    , currencyType
+    , expiresAt
+    , floatFromCents
+    , getBankTime
+    , getName
+    , greenBucks
+    , group
+    , isValid
+    , issuedAt
+    , mul
+    , negate
+    , redBucks
+    , sameCurrency
+    , sameExpiration
+    , sameIssue
+    , samePeriod
+    , stringFromBankTime
+    , stringFromCents
+    , stringFromCurrency
+    , stringFromExpiration
+    , stringFromMoney
+    , usDollars
+    , value
+    , valueInCents_
+    , valueToString
+    )
 
 {-| A model for currency with an identity
-     and an expiration.
-
+and an expiration.
 -}
 
-
-import Internal.Types exposing (Money(..), Cents(..), Value(..), BankTime(..), Expiration(..), Currency(..), CurrencyType(..))
-import List.Extra
-import String.Interpolate exposing(interpolate)
-import Internal.Utility as Utility
 import Internal.Cents as Cents
-
-
-
-
+import Internal.Types exposing (BankTime(..), Cents(..), Currency(..), CurrencyType(..), Expiration(..), Money(..), Value(..))
+import Internal.Utility as Utility
+import List.Extra
+import String.Interpolate exposing (interpolate)
 
 
 bankTime : Int -> BankTime
-bankTime t = BankTime t
+bankTime t =
+    BankTime t
 
 
-createCurrency : CurrencyType -> String  -> Currency
-createCurrency ctype_ name = Currency ctype_  name
+getBankTime : BankTime -> Int
+getBankTime (BankTime t) =
+    t
 
-createCompCurrency : String  -> Currency
-createCompCurrency name = Currency Complementary  name
 
-createFiatCurrency : String  -> Currency
-createFiatCurrency name = Currency Fiat  name
+createCurrency : CurrencyType -> String -> Currency
+createCurrency ctype_ name =
+    Currency ctype_ name
+
+
+createCompCurrency : String -> Currency
+createCompCurrency name =
+    Currency Complementary name
+
+
+createFiatCurrency : String -> Currency
+createFiatCurrency name =
+    Currency Fiat name
+
+
+getName : Currency -> String
+getName (Currency _ name_) =
+    name_
 
 
 greenBucks : Currency
-greenBucks = createCompCurrency "Greenbucks"
+greenBucks =
+    createCompCurrency "Greenbucks"
+
 
 redBucks : Currency
-redBucks = createCompCurrency "Redbucks"
+redBucks =
+    createCompCurrency "Redbucks"
+
 
 usDollars : Currency
-usDollars = createFiatCurrency "USDollars"
+usDollars =
+    createFiatCurrency "USDollars"
 
-createFinite : Currency ->  Int -> Int -> Float -> Money
+
+createFinite : Currency -> Int -> Int -> Float -> Money
 createFinite currency_ issuedAt_ expiresAt_ amount_ =
-    Money {
-        currency = currency_
-      , issuedAt = BankTime issuedAt_
-      , expiresAt = Finite (BankTime expiresAt_)
-      , amount = Cents (round (100.0 * amount_))
-    }
+    Money
+        { currency = currency_
+        , issuedAt = BankTime issuedAt_
+        , expiresAt = Finite (BankTime expiresAt_)
+        , amount = Cents (round (100.0 * amount_))
+        }
 
-createInfinite : Currency ->  Int -> Float -> Money
-createInfinite currency_ issuedAt_  amount_ =
-    Money {
-        currency = currency_
-      , issuedAt = BankTime issuedAt_
-      , expiresAt = Infinite
-      , amount = Cents (round (100.0 * amount_))
-    }
+
+createInfinite : Currency -> Int -> Float -> Money
+createInfinite currency_ issuedAt_ amount_ =
+    Money
+        { currency = currency_
+        , issuedAt = BankTime issuedAt_
+        , expiresAt = Infinite
+        , amount = Cents (round (100.0 * amount_))
+        }
+
 
 {-|
 
@@ -84,53 +137,63 @@ createInfinite currency_ issuedAt_  amount_ =
     sameCurrency [m1, m2]
     --> False
 
-
 -}
 sameCurrency : List Money -> Bool
 sameCurrency list =
-   case list of
-       [] -> False
-       (x::rest) ->
-           let
-               headCurrency = currency x
-           in
-             rest
-               |> List.map (\m -> headCurrency == (currency m))
-               |> Utility.andOfList
+    case list of
+        [] ->
+            False
 
-
+        x :: rest ->
+            let
+                headCurrency =
+                    currency x
+            in
+            rest
+                |> List.map (\m -> headCurrency == currency m)
+                |> Utility.andOfList
 
 
 amount : Money -> Cents
 amount (Money m) =
     m.amount
 
+
 currency : Money -> Currency
-currency (Money m) = m.currency
+currency (Money m) =
+    m.currency
+
 
 currencyType : Money -> CurrencyType
 currencyType (Money m) =
-     m.currency |> ctype
+    m.currency |> ctype
+
 
 ctype : Currency -> CurrencyType
-ctype (Currency t _) = t
-
+ctype (Currency t _) =
+    t
 
 
 issuedAt : Money -> BankTime
-issuedAt (Money m) = m.issuedAt
+issuedAt (Money m) =
+    m.issuedAt
+
 
 expiresAt : Money -> Expiration
-expiresAt (Money m) = m.expiresAt
+expiresAt (Money m) =
+    m.expiresAt
 
 
 sameIssue : Money -> Money -> Bool
 sameIssue a b =
     issuedAt a == issuedAt b
 
+
 sameExpiration : Money -> Money -> Bool
 sameExpiration a b =
     expiresAt a == expiresAt b
+
+
 {-|
 
     import Internal.Types exposing(..)
@@ -141,16 +204,15 @@ sameExpiration a b =
     stringFromMoney <| Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Infinite }
     --> "1.23 Greenbucks (C) 0:Infinite"
 
-
-
 -}
 stringFromMoney : Money -> String
 stringFromMoney (Money m) =
-  interpolate "{0} {1} {2}:{3}" [stringFromCents m.amount
-    , stringFromCurrency m.currency
-    , stringFromBankTime m.issuedAt
-    , stringFromExpiration m.expiresAt ]
-
+    interpolate "{0} {1} {2}:{3}"
+        [ stringFromCents m.amount
+        , stringFromCurrency m.currency
+        , stringFromBankTime m.issuedAt
+        , stringFromExpiration m.expiresAt
+        ]
 
 
 
@@ -166,13 +228,15 @@ stringFromMoney (Money m) =
 
     Internal.Money.negate c1
     --> Money {amount = Cents -123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Finite (BankTime 100) }
+
 -}
 negate : Money -> Money
 negate (Money m) =
-    Money {m | amount = Cents.negate m.amount}
+    Money { m | amount = Cents.negate m.amount }
 
 
 {-|
+
     import Internal.Types exposing(..)
 
 
@@ -193,12 +257,15 @@ negate (Money m) =
 
     samePeriod c1 c3
     --> False
+
 -}
 samePeriod : Money -> Money -> Bool
 samePeriod a b =
     issuedAt a == issuedAt b && expiresAt a == expiresAt b
 
+
 {-|
+
     import Internal.Types exposing(..)
 
     c1 : Money
@@ -218,16 +285,16 @@ samePeriod a b =
 
     group [c1, c2, c3]
     --> [[c1,c2], [c3]]
+
 -}
 group : List Money -> List (List Money)
 group list =
     list
-      |> List.Extra.groupWhile samePeriod
-      |> List.map (\item -> (Tuple.first item)::(Tuple.second item))
+        |> List.Extra.groupWhile samePeriod
+        |> List.map (\item -> Tuple.first item :: Tuple.second item)
 
 
-
-{-| This is DANGEROUS function.  It assumes
+{-| This is DANGEROUS function. It assumes
 that all elements of the list have the
 same period ahd are of the same currency.
 It should only be called by functions that
@@ -246,18 +313,21 @@ establish these conditions.
 
     consolidate [c1,c2]
     --> Just c3
+
 -}
 consolidate : List Money -> Maybe Money
 consolidate list =
     case List.head list of
-        Nothing -> Nothing
-        Just (Money m) ->
-           Just <| Money { m | amount = valueInCents_ list}
+        Nothing ->
+            Nothing
 
+        Just (Money m) ->
+            Just <| Money { m | amount = valueInCents_ list }
 
 
 
 -- OPERATIONS AND FUNCTIONS --
+
 
 {-|
 
@@ -281,48 +351,58 @@ consolidate list =
     isValid (BankTime 101) <| Money {amount = Cents 123, currency = greenBucks, issuedAt = BankTime 0, expiresAt = Infinite }
     --> True
 
-
 -}
 isValid : BankTime -> Money -> Bool
 isValid (BankTime currentTime) (Money m) =
     case m.issuedAt of
-        (BankTime issueTime) ->
+        BankTime issueTime ->
             if issueTime > currentTime then
-              False
+                False
+
             else
-              case m.expiresAt of
-                  Infinite -> True
-                  Finite (BankTime expirationTime) ->
-                      expirationTime  >=  currentTime
+                case m.expiresAt of
+                    Infinite ->
+                        True
+
+                    Finite (BankTime expirationTime) ->
+                        expirationTime >= currentTime
 
 
 value : BankTime -> Money -> Value
 value bt ((Money data) as m) =
     case isValid bt m of
-        True -> Value data.currency data.amount
-        False -> Value data.currency (Cents 0)
+        True ->
+            Value data.currency data.amount
+
+        False ->
+            Value data.currency (Cents 0)
+
+
 
 -- CONVERSIONS --
 
+
 valueInCents_ : List Money -> Cents
-valueInCents_ list  =
-  case list of
-      [] -> (Cents 0)
-      _ ->
-         list
-            |> List.map amount
-            |> List.map (\(Cents k) -> k)
-            |> List.sum
-            |> (\s -> Cents s)
+valueInCents_ list =
+    case list of
+        [] ->
+            Cents 0
 
-
+        _ ->
+            list
+                |> List.map amount
+                |> List.map (\(Cents k) -> k)
+                |> List.sum
+                |> (\s -> Cents s)
 
 
 valueToString : Value -> String
 valueToString (Value currency_ cents) =
-    interpolate "{1} {0}" [stringFromCurrency currency_, stringFromCents cents]
+    interpolate "{1} {0}" [ stringFromCurrency currency_, stringFromCents cents ]
+
 
 {-|
+
     import Internal.Types exposing(Cents(..))
 
     stringFromCents (Cents 123)
@@ -347,15 +427,17 @@ stringFromCents cents =
 -}
 floatFromCents : Cents -> Float
 floatFromCents (Cents k) =
-    (toFloat k) / 100.0
+    toFloat k / 100.0
 
 
 stringFromExpiration : Expiration -> String
 stringFromExpiration e =
-  case e of
-      Finite t -> stringFromBankTime t
-      Infinite ->  "Infinite"
+    case e of
+        Finite t ->
+            stringFromBankTime t
 
+        Infinite ->
+            "Infinite"
 
 
 stringFromBankTime : BankTime -> String
@@ -363,16 +445,16 @@ stringFromBankTime (BankTime k) =
     String.fromInt k
 
 
-
 stringFromCurrency : Currency -> String
 stringFromCurrency (Currency ctype_ name) =
     case ctype_ of
-        Fiat -> interpolate "{0} ({1})" [name, "F"]
-        Complementary -> interpolate "{0} ({1})" [name, "C"]
+        Fiat ->
+            interpolate "{0} ({1})" [ name, "F" ]
+
+        Complementary ->
+            interpolate "{0} ({1})" [ name, "C" ]
 
 
 mul : Int -> Money -> Money
 mul k (Money data) =
-    (Money {data | amount = Cents.mul k data.amount})
-
-
+    Money { data | amount = Cents.mul k data.amount }

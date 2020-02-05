@@ -1,8 +1,17 @@
-module ActionHelper exposing (creditHouseHolds, creditHousehold, getShops, householdConsumptionStep, minimumHouseholdInventory, nearestShop, selectHouseholdWithLeastInventory)
+module ActionHelper exposing
+    ( creditEntity
+    , creditHouseHolds
+    , getShops
+    , householdConsumptionStep
+    , minimumHouseholdInventory
+    , nearestShop
+    , selectHouseholdWithLeastInventory
+    )
 
 import Account
 import EngineData exposing (Config)
 import Entity exposing (Entity)
+import Internal.Types exposing (CurrencyType(..), Expiration(..))
 import ModelTypes exposing (Inventory, Item)
 import Money
 import Random
@@ -109,21 +118,45 @@ minimumHouseholdInventory state =
         |> Maybe.withDefault 0
 
 
-creditHouseHolds : Config -> Int -> Float -> List Entity -> List Entity
-creditHouseHolds config t value households =
-    List.map (creditHousehold config t value) households
-
-
-creditHousehold : Config -> Int -> Float -> Entity -> Entity
-creditHousehold config t value entity =
+creditHouseHolds : Config -> Int -> List Entity -> List Entity
+creditHouseHolds config t households =
     let
+        currency : Money.Currency
         currency =
             Money.createFiatCurrency config.fiatCurrencyName
 
+        amount : Float
+        amount =
+            config.periodicHouseHoldFiatIncome
+    in
+    List.map (creditEntity config t currency Infinite amount) households
+
+
+creditEntity : Config -> Int -> Money.Currency -> Expiration -> Float -> Entity -> Entity
+creditEntity config t currency expiration amount entity =
+    let
         money =
-            Money.createInfinite currency 0 config.periodicHouseHoldFiatIncome
+            case ( Money.typeOfCurrency currency, expiration ) of
+                ( Fiat, _ ) ->
+                    Money.createInfinite currency 0 amount
+
+                ( Complementary, Infinite ) ->
+                    Money.createInfinite currency 0 amount
+
+                ( Complementary, Finite s ) ->
+                    Money.createFinite currency t (Money.getBankTime s) amount
 
         account =
-            Account.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
+            case Money.typeOfCurrency currency of
+                Fiat ->
+                    Account.credit (Money.bankTime t) money (Entity.getFiatAccount entity)
+
+                Complementary ->
+                    Account.credit (Money.bankTime t) money (Entity.getCCAccount entity)
     in
-    Entity.setFiatAccount account entity
+    case Money.typeOfCurrency currency of
+        Fiat ->
+            Entity.setFiatAccount account entity
+
+        Complementary ->
+            Entity.setCCAccount account entity
