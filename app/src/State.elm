@@ -15,6 +15,7 @@ type alias State =
     , totalHouseholdPurchases : Int
     , totalHouseholdConsumption : Int
     , log : List String
+    , tick : Int
     }
 
 
@@ -29,6 +30,7 @@ initialState k =
     , totalHouseholdPurchases = 0
     , totalHouseholdConsumption = 0
     , log = []
+    , tick = 0
     }
 
 

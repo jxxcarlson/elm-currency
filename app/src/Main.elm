@@ -154,6 +154,7 @@ mainColumn model =
             [ lhColumn model
             , dashboard model
             ]
+        , footer model
         ]
 
 
@@ -161,7 +162,6 @@ lhColumn : Model -> Element Msg
 lhColumn model =
     column Style.lhColumn
         [ displayState model
-        , footer model
         ]
 
 
@@ -179,7 +179,19 @@ dashboard model =
         , el [] (text <| "Total consumed = " ++ String.fromInt model.state.totalHouseholdConsumption)
         , el [] (text <| "Net purchases = " ++ String.fromInt (model.state.totalHouseholdPurchases - model.state.totalHouseholdConsumption))
         , el [] (text <| "Business inventory = " ++ businessInventory model)
+        , el [] (text <| "------------------")
         ]
+
+
+displayLog : State -> Element msg
+displayLog state =
+    let
+        displayItem : String -> Element msg
+        displayItem str =
+            el [] (text str)
+    in
+    List.map displayItem (List.take 20 state.log)
+        |> column [ Background.color Style.lightColor, padding 25, Font.size 12, alignTop, width (px 150) ]
 
 
 businessInventory : Model -> String
@@ -189,7 +201,7 @@ businessInventory model =
 
 
 footer model =
-    row [ paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width (px (round model.configuration.renderWidth)), height (px 50) ]
+    row [ paddingXY 10 0, Font.size 14, spacing 15, centerX, Background.color Style.lightColor, width fill, height (px 50) ]
         [ resetButton model
         , runButton model
         , el [ Font.family [ Font.typeface "Courier" ] ] (text <| clock model.counter)
@@ -222,12 +234,13 @@ clock k =
 
 displayState : Model -> Element Msg
 displayState model =
-    row [ centerX ]
+    row [ centerX, spacing 10 ]
         [ Engine.render
             model.configuration
             model.state
             |> Element.html
             |> Element.map CellGrid
+        , displayLog model.state
         ]
 
 

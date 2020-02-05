@@ -78,7 +78,7 @@ configurations =
 config1 : Config
 config1 =
     { title = "1. Simple test, Fiat currency"
-    , tickLoopInterval = 100
+    , tickLoopInterval = 1.5 * 1000
     , cycleLength = 360
     , renderWidth = 500
     , gridWidth = 30

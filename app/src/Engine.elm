@@ -72,7 +72,7 @@ newRandomNumber state =
 
 nextState : Config -> Int -> State -> State
 nextState config_ t state =
-    state
+    { state | tick = t }
         |> Action.businessBuyGoods
         |> Action.payHouseholds config_ t
         |> Utility.iterate 2 (Action.householdBuyGoods t)

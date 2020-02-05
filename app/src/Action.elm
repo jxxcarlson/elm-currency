@@ -134,8 +134,16 @@ businessBuyGoods state =
                         (\b -> Entity.getName b == Entity.getName newBusiness)
                         (\b -> newBusiness)
                         state.businesses
+
+                logString =
+                    "Buy " ++ Entity.getName newBusiness ++ ", " ++ String.fromInt a
             in
-            { state | seed = newSeed, businesses = newBusinesses }
+            { state | seed = newSeed, businesses = newBusinesses, log = logItem state logString }
+
+
+logItem : State -> String -> List String
+logItem state item =
+    (String.padRight 3 ' ' (String.fromInt state.tick) ++ ": " ++ item) :: state.log
 
 
 {-| Choose a low-inventory household at random and buy goods
