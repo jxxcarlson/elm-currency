@@ -17,6 +17,7 @@ import List.Extra
 import ModelTypes exposing (Inventory)
 import Money
 import Random
+import Report
 import State exposing (State)
 import Utility
 import Value
@@ -121,8 +122,103 @@ readEducationalContent state =
             { state | businesses = newBusinesses, log = logItem state logString }
 
 
+probability : Random.Generator Float
+probability =
+    Random.float 0 1
+
+
 businessBuyGoods : State -> State
 businessBuyGoods state =
+    let
+        ppp =
+            state.config.probabilityOfPurchasing
+
+        ( probabilityToSelectABusiness, seed1 ) =
+            Random.step probability state.seed
+
+        ( probabilityForChoosingPurchaseAmount, seed2 ) =
+            Random.step probability seed1
+
+        ( p3, seed3 ) =
+            Random.step probability seed2
+
+        business__ =
+            case ( probabilityToSelectABusiness < ppp, probabilityToSelectABusiness < 2 * ppp ) of
+                ( True, _ ) ->
+                    List.Extra.getAt 0 state.businesses
+
+                ( False, True ) ->
+                    List.Extra.getAt 1 state.businesses
+
+                ( _, _ ) ->
+                    Nothing
+
+        fractionalPurchaseCeilingToDate =
+            round (toFloat (state.config.monthlyPurchaseCeilingInUnits * state.tick) / 30.0) + 5
+
+        business_ =
+            case Maybe.andThen Entity.unitsPurchased business__ |> Maybe.map (\x -> x < fractionalPurchaseCeilingToDate) of
+                Just True ->
+                    business__
+
+                _ ->
+                    Nothing
+    in
+    case business_ of
+        Nothing ->
+            state
+
+        Just business ->
+            let
+                randomPurchaseAmount : Float -> Int
+                randomPurchaseAmount q =
+                    let
+                        range =
+                            toFloat (state.config.maximumPurchaseOfA - state.config.minimumPurchaseOfA)
+                    in
+                    state.config.minimumPurchaseOfA + round (q * range)
+
+                a =
+                    randomPurchaseAmount probabilityForChoosingPurchaseAmount
+
+                aCC =
+                    config.maximumCCRatio * toFloat a |> round
+
+                aFiat =
+                    a - aCC
+
+                item =
+                    ModelTypes.setQuantity a state.config.itemA
+
+                config =
+                    state.config
+
+                oldFiatBalance =
+                    Report.fiatBalanceOfEntity (Money.bankTime 0) business |> String.fromFloat
+
+                newBusiness =
+                    -- subtract total cost of items purchased from supplier
+                    Entity.addToInventory item business
+                        |> AH.creditEntity config state.tick config.fiatCurrency Infinite (toFloat aFiat * -config.itemCost)
+                        |> AH.creditEntity config state.tick config.complementaryCurrency config.complementaryCurrencyExpiration (toFloat aCC * -config.itemCost)
+
+                newBusinesses =
+                    List.Extra.updateIf
+                        (\b -> Entity.getName b == Entity.getName newBusiness)
+                        (\b -> newBusiness)
+                        state.businesses
+
+                newFiatBalance =
+                    Report.fiatBalanceOfEntity (Money.bankTime 0) newBusiness |> String.fromFloat
+
+                logString =
+                    "Buy " ++ Entity.getName newBusiness ++ ", " ++ String.fromInt a ++ ", FB: " ++ oldFiatBalance ++ " >> " ++ newFiatBalance
+            in
+            { state | seed = seed3, businesses = newBusinesses, log = logItem state logString }
+
+
+businessBuyGoods1 : State -> State
+businessBuyGoods1 state =
     let
         lowInventoryBusiness =
             List.filter
@@ -155,15 +251,26 @@ businessBuyGoods state =
                 a =
                     randomPurchaseAmount i
 
+                aCC =
+                    config.maximumCCRatio * toFloat a |> round
+
+                aFiat =
+                    a - aCC
+
                 item =
                     ModelTypes.setQuantity a state.config.itemA
 
                 config =
                     state.config
 
+                oldFiatBalance =
+                    Report.fiatBalanceOfEntity (Money.bankTime 0) business |> String.fromFloat
+
                 newBusiness =
+                    -- subtract total cost of items purchased from supplier
                     Entity.addToInventory item business
-                        |> AH.creditEntity config state.tick config.fiatCurrency Infinite -1
+                        |> AH.creditEntity config state.tick config.fiatCurrency Infinite (toFloat aFiat * -config.itemCost)
+                        |> AH.creditEntity config state.tick config.complementaryCurrency config.complementaryCurrencyExpiration (toFloat aCC * -config.itemCost)
 
                 newBusinesses =
                     List.Extra.updateIf
@@ -171,10 +278,19 @@ businessBuyGoods state =
                         (\b -> newBusiness)
                         state.businesses
 
+                newFiatBalance =
+                    Report.fiatBalanceOfEntity (Money.bankTime 0) newBusiness |> String.fromFloat
+
                 logString =
-                    "Buy " ++ Entity.getName newBusiness ++ ", " ++ String.fromInt a
+                    "Buy " ++ Entity.getName newBusiness ++ ", " ++ String.fromInt a ++ ", FB: " ++ oldFiatBalance ++ " >> " ++ newFiatBalance
             in
             { state | seed = newSeed, businesses = newBusinesses, log = logItem state logString }
+
+
+
+--fiatBalance : Entity -> String
+--fiatBalance e =
+--    String.fromFloat (Report.fiatBalanceOfEntityList (Money.bankTime 0) e)
 
 
 logItem : State -> String -> List String
@@ -218,27 +334,31 @@ householdBuyGoods_ t e state =
         Nothing ->
             state
 
-        Just shop ->
+        Just shop_ ->
             let
-                maxRandInt =
-                    1000
+                ( shop, message ) =
+                    case Entity.inventoryAmount "AA" shop_ == 0 of
+                        False ->
+                            ( shop_, "" )
 
-                ( i, newSeed ) =
-                    Random.step (Random.int 0 maxRandInt) state.seed
+                        True ->
+                            List.filter (\sh -> sh /= shop_) state.businesses
+                                |> List.head
+                                |> Maybe.withDefault shop_
+                                |> (\s -> ( s, "InventoryFailure" ))
 
-                randomPurchaseAmount : Int -> Int
-                randomPurchaseAmount ri =
-                    let
-                        p =
-                            toFloat ri / toFloat maxRandInt
+                ( p, newSeed ) =
+                    Random.step probability state.seed
 
-                        range =
-                            toFloat (state.config.householdMaximumPurchaseAmount - state.config.householdMinimumPurchaseAmount)
-                    in
-                    state.config.householdMinimumPurchaseAmount + round (p * range)
+                range =
+                    toFloat (state.config.householdMaximumPurchaseAmount - state.config.householdMinimumPurchaseAmount)
+
+                randomPurchaseAmount : Float -> Int
+                randomPurchaseAmount q =
+                    state.config.householdMinimumPurchaseAmount + round (q * range)
 
                 a =
-                    randomPurchaseAmount i
+                    randomPurchaseAmount p
 
                 qS =
                     Entity.inventoryAmount "AA" shop
@@ -310,7 +430,13 @@ householdBuyGoods_ t e state =
                         state.businesses
 
                 logString =
-                    "HB " ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
+                    case message of
+                        "InventoryFailure" ->
+                            "INVENT. FAILURE"
+
+                        -- "(IF)" ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
+                        _ ->
+                            "HB" ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
             in
             { state
                 | households = newHouseholds

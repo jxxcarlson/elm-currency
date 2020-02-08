@@ -1,7 +1,9 @@
 module Report exposing
     ( businessInventoryOf
-    , ccBalanceOf
-    , fiatBalanceOf
+    , ccBalanceOfEntity
+    , ccBalanceOfEntityList
+    , fiatBalanceOfEntity
+    , fiatBalanceOfEntityList
     , fiatHoldingsDisplay
     , householdInventoryOf
     , minMaxHouseholdInventoryOf
@@ -85,8 +87,8 @@ businessInventoryOf itemName_ state =
     List.map f state.businesses
 
 
-fiatBalanceOf : BankTime -> List Entity -> List Float
-fiatBalanceOf bt entityList =
+fiatBalanceOfEntityList : BankTime -> List Entity -> List Float
+fiatBalanceOfEntityList bt entityList =
     let
         f : Entity -> Float
         f e =
@@ -98,8 +100,16 @@ fiatBalanceOf bt entityList =
     List.map f entityList
 
 
-ccBalanceOf : BankTime -> List Entity -> List Float
-ccBalanceOf bt entityList =
+fiatBalanceOfEntity : BankTime -> Entity -> Float
+fiatBalanceOfEntity bt entity =
+    entity
+        |> Entity.getFiatAccount
+        |> Account.value bt
+        |> Value.toFloat_
+
+
+ccBalanceOfEntityList : BankTime -> List Entity -> List Float
+ccBalanceOfEntityList bt entityList =
     let
         f : Entity -> Float
         f e =
@@ -109,3 +119,11 @@ ccBalanceOf bt entityList =
                 |> Value.toFloat_
     in
     List.map f entityList
+
+
+ccBalanceOfEntity : BankTime -> Entity -> Float
+ccBalanceOfEntity bt entity =
+    entity
+        |> Entity.getCCAccount
+        |> Account.value bt
+        |> Value.toFloat_

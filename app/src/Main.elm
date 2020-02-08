@@ -41,6 +41,7 @@ type alias Model =
     , configurationIndex : Int
     , configuration : EngineData.Config
     , runState : RunState
+    , filterString : String
     }
 
 
@@ -56,6 +57,7 @@ type Msg
     | Tick Time.Posix
     | ToggleRun
     | Reset
+    | AcceptFilter String
 
 
 type alias Flags =
@@ -75,6 +77,7 @@ init flags =
       , configuration = config
       , state = State.configure config 400
       , runState = Paused
+      , filterString = ""
       }
     , Cmd.none
     )
@@ -139,6 +142,9 @@ update msg model =
             , Cmd.none
             )
 
+        AcceptFilter str ->
+            ( { model | filterString = str }, Cmd.none )
+
 
 
 --
@@ -157,7 +163,7 @@ mainColumn model =
         [ title "Simulator II"
         , row [ centerX, spacing 10 ]
             [ displayState model
-            , displayLog model.state
+            , displayLog model
             , dashboard model
             ]
         , footer model
@@ -186,18 +192,64 @@ dashboard model =
         ]
 
 
-displayLog : State -> Element msg
-displayLog state =
+displayLog : Model -> Element msg
+displayLog model =
     let
         displayItem : String -> Element msg
         displayItem str =
             el [] (text str)
 
+        filteredLog =
+            case model.filterString == "" of
+                True ->
+                    model.state.log
+
+                False ->
+                    let
+                        badStrings =
+                            String.words model.filterString |> List.map String.trim
+
+                        filter =
+                            \item -> conjunctiveFilter (\target item_ -> String.contains (Debug.log "T" item_) target) badStrings item
+                    in
+                    List.filter filter model.state.log
+
         log =
-            "Log" :: "--------------------------" :: List.take 30 state.log
+            "Log" :: "--------------------------" :: List.take 30 filteredLog
     in
     List.map displayItem log
         |> column Style.log
+
+
+{-|
+
+    f = \target item -> target == item
+    --> disjunctiveFilter f ["a", "b"] "a"
+
+    disjunctiveFilter f ["a", "b"] "a"
+    --> True : Bool
+
+    disjunctiveFilter f ["a", "b"] "b"
+    --> True : Bool
+
+    disjunctiveFilter f ["a", "b"] "c"
+    --> False
+
+-}
+disjunctiveFilter : (target -> item -> Bool) -> List item -> target -> Bool
+disjunctiveFilter filter list target =
+    List.map (filter target) list
+        |> booleanOr
+
+
+conjunctiveFilter : (target -> item -> Bool) -> List item -> target -> Bool
+conjunctiveFilter filter list target =
+    not (disjunctiveFilter filter list target)
+
+
+booleanOr : List Bool -> Bool
+booleanOr list =
+    List.foldl (||) False list
 
 
 businessInventory : Model -> String
@@ -208,13 +260,13 @@ businessInventory model =
 
 fiatBalances : Model -> String
 fiatBalances model =
-    List.map String.fromFloat (Report.fiatBalanceOf (Money.bankTime model.state.tick) model.state.businesses)
+    List.map String.fromFloat (Report.fiatBalanceOfEntityList (Money.bankTime model.state.tick) model.state.businesses)
         |> String.join ", "
 
 
 ccBalances : Model -> String
 ccBalances model =
-    List.map String.fromFloat (Report.ccBalanceOf (Money.bankTime model.state.tick) model.state.businesses)
+    List.map String.fromFloat (Report.ccBalanceOfEntityList (Money.bankTime model.state.tick) model.state.businesses)
         |> String.join ", "
 
 
@@ -223,6 +275,7 @@ footer model =
         [ resetButton model
         , runButton model
         , el [ Font.family [ Font.typeface "Courier" ] ] (text <| clock model.counter)
+        , filterInput model
         ]
 
 
@@ -305,3 +358,12 @@ resetButton model =
             , label = el [ centerY ] (text "Reset")
             }
         ]
+
+
+filterInput model =
+    Input.text [ width (px 300), height (px 30), paddingEach { top = 8, bottom = 0, left = 4, right = 0 } ]
+        { onChange = AcceptFilter
+        , text = model.filterString
+        , placeholder = Nothing
+        , label = Input.labelLeft [ centerY ] (text <| "Exclude words: ")
+        }

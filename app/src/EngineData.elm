@@ -63,6 +63,9 @@ type alias Config =
     , maximumPurchaseOfA : Int
     , educationalContentCycle : Int
     , educationPaymentPerCycle : Float
+    , maximumCCRatio : Float
+    , probabilityOfPurchasing : Float
+    , monthlyPurchaseCeilingInUnits : Int
 
     -- Households
     , numberOfHouseholds : Int
@@ -86,7 +89,7 @@ configurations =
 config1 : Config
 config1 =
     { title = "1. Simple test, Fiat currency"
-    , tickLoopInterval = 1 * 1000
+    , tickLoopInterval = 0.3 * 1000
     , cycleLength = 360
     , renderWidth = 573
     , gridWidth = 30
@@ -107,10 +110,13 @@ config1 =
     , itemA = Item { name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1 }
     , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
     , randomPurchaseFraction = 0.1
-    , minimumBusinessInventoryOfA = 20
-    , minimumPurchaseOfA = 5
+    , minimumBusinessInventoryOfA = 5
+    , minimumPurchaseOfA = 2
     , maximumPurchaseOfA = 15
     , educationalContentCycle = 30
+    , maximumCCRatio = 0.1
+    , probabilityOfPurchasing = 0.3
+    , monthlyPurchaseCeilingInUnits = 80
 
     -- Educators
     -- Households
@@ -155,6 +161,9 @@ config2 =
     , minimumPurchaseOfA = 5
     , maximumPurchaseOfA = 15
     , educationalContentCycle = 30
+    , maximumCCRatio = 0.1
+    , probabilityOfPurchasing = 0.3
+    , monthlyPurchaseCeilingInUnits = 80
 
     -- Households
     , numberOfHouseholds = 20
@@ -189,7 +198,7 @@ supplier1 config =
         , position = Position 1 1
         , color = Color.rgba 1.0 0.3 1.0 0.8
         }
-        (BusinessCharacteristics { radius = 10 })
+        (SupplierCharacteristics {})
 
 
 educator1 : Config -> Entity
@@ -203,7 +212,7 @@ educator1 config =
         , position = Position (config.gridWidth - 1) (config.gridWidth - 1)
         , color = Color.rgba 0.2 0.8 0.2 0.8
         }
-        (BusinessCharacteristics { radius = 30 })
+        (EducatorCharacteristics {})
 
 
 business1 : Config -> Entity
@@ -217,7 +226,7 @@ business1 config =
         , position = Position 8 (config.gridWidth - 5)
         , color = Color.rgba 0.4 0.4 1.0 0.8
         }
-        (BusinessCharacteristics { radius = config.businessRadius })
+        (BusinessCharacteristics { radius = config.businessRadius, unitsPurchased = 0 })
 
 
 business2 config =

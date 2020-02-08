@@ -28,6 +28,7 @@ module Entity exposing
     , setInventory
     , setName
     , setPosition
+    , unitsPurchased
     , updateAccount
     )
 
@@ -111,12 +112,33 @@ type TEntity
 
 type Characteristics
     = BusinessCharacteristics BusinessCharRecord
+    | EducatorCharacteristics EducatorCharRecord
+    | SupplierCharacteristics SupplierCharRecord
     | HouseholdCharacteristics HouseholdCharRecord
+
+
+unitsPurchased : Entity -> Maybe Int
+unitsPurchased (Entity _ characteristics) =
+    case characteristics of
+        BusinessCharacteristics data ->
+            Just data.unitsPurchased
+
+        _ ->
+            Nothing
 
 
 type alias BusinessCharRecord =
     { radius : Float
+    , unitsPurchased : Int
     }
+
+
+type alias EducatorCharRecord =
+    {}
+
+
+type alias SupplierCharRecord =
+    {}
 
 
 type alias HouseholdCharRecord =
@@ -205,6 +227,16 @@ setInventory inventory_ (Entity common characteristics) =
 addToInventory : Item -> Entity -> Entity
 addToInventory item e =
     mapInventory (\inv -> Inventory.add item inv) e
+
+
+addToUnitsPurchased : Int -> Entity -> Entity
+addToUnitsPurchased k ((Entity common char) as e) =
+    case char of
+        BusinessCharacteristics data ->
+            Entity common (BusinessCharacteristics { data | unitsPurchased = data.unitsPurchased + k })
+
+        _ ->
+            e
 
 
 getName : Entity -> String
