@@ -30,7 +30,7 @@ entityRadius e =
             1.5 * toFloat (1 + Entity.inventoryAmount "AA" e)
 
         TShop ->
-            0.5 * toFloat (1 + Entity.inventoryAmount "AA" e)
+            6 + 0.5 * toFloat (1 + Entity.inventoryAmount "AA" e)
 
         TSupplier ->
             15
@@ -83,3 +83,4 @@ nextState config_ t state =
         |> Action.payHouseholds config_ t
         |> Utility.iterate 2 (Action.householdBuyGoods t)
         |> Action.consumeA t
+        |> Action.recordData t

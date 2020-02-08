@@ -4,6 +4,7 @@ module Style exposing
     , lightColor
     , log
     , mainColumn
+    , titleColor
     )
 
 import Element exposing (..)
@@ -56,3 +57,8 @@ button =
 lightColor : Color
 lightColor =
     rgb255 200 200 200
+
+
+titleColor : Color
+titleColor =
+    rgb255 190 190 255

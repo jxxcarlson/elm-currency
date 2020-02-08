@@ -8,6 +8,7 @@ module Main exposing (main)
 
 import Browser
 import CellGrid.Render
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
@@ -16,8 +17,10 @@ import Engine
 import EngineData
 import Entity
 import Html exposing (Html)
+import Http
 import Money
 import Report
+import SimpleGraph exposing (Option(..))
 import State exposing (State)
 import String.Interpolate exposing (interpolate)
 import Style
@@ -42,6 +45,7 @@ type alias Model =
     , configuration : EngineData.Config
     , runState : RunState
     , filterString : String
+    , randomAtmosphericInt : Maybe Int
     }
 
 
@@ -58,6 +62,7 @@ type Msg
     | ToggleRun
     | Reset
     | AcceptFilter String
+    | GotAtomsphericRandomNumber (Result Http.Error String)
 
 
 type alias Flags =
@@ -66,20 +71,17 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    let
-        config =
-            EngineData.getConfiguration 0
-    in
     ( { input = "App started"
       , output = "App started"
       , counter = 0
-      , configurationIndex = 0
-      , configuration = config
-      , state = State.configure config 400
+      , configurationIndex = 1
+      , configuration = EngineData.config1
+      , state = State.configure EngineData.config1 400
       , runState = Paused
       , filterString = ""
+      , randomAtmosphericInt = Nothing
       }
-    , Cmd.none
+    , getRandomNumber
     )
 
 
@@ -135,15 +137,28 @@ update msg model =
                     model.configuration
             in
             ( { model
-                | state = State.configure config 400
+                | state = State.configure config (model.randomAtmosphericInt |> Maybe.withDefault 400)
                 , runState = Paused
                 , counter = 0
               }
-            , Cmd.none
+            , getRandomNumber
             )
 
         AcceptFilter str ->
             ( { model | filterString = str }, Cmd.none )
+
+        GotAtomsphericRandomNumber result ->
+            case result of
+                Ok str ->
+                    case String.toInt (String.trim str) of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just rn ->
+                            ( { model | randomAtmosphericInt = Just rn }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -161,13 +176,26 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column Style.mainColumn
         [ title "Simulator II"
-        , row [ centerX, spacing 10 ]
+        , row [ centerX, spacing 5 ]
             [ displayState model
             , displayLog model
             , dashboard model
             ]
+        , graphDisplay model
         , footer model
         ]
+
+
+lineGraphAttributes =
+    { graphHeight = 35
+    , graphWidth = 1200
+    , options = [ Color "blue", XTickmarks 12, YTickmarks 0, DeltaX 3 ]
+    }
+
+
+graphDisplay model =
+    row [ moveDown 10, width fill, height (px 50), Background.color Style.lightColor ]
+        [ SimpleGraph.barChart lineGraphAttributes (List.map Tuple.second model.state.data |> List.reverse) |> Element.html ]
 
 
 dashboard : Model -> Element msg
@@ -276,7 +304,22 @@ footer model =
         , runButton model
         , el [ Font.family [ Font.typeface "Courier" ] ] (text <| clock model.counter)
         , filterInput model
+        , randomSeedDisplay model
         ]
+
+
+randomSeedDisplay : Model -> Element msg
+randomSeedDisplay model =
+    let
+        n =
+            case model.randomAtmosphericInt of
+                Nothing ->
+                    "400"
+
+                Just k ->
+                    String.fromInt k
+    in
+    el [] (text <| "Seed: " ++ n)
 
 
 fiatHoldingsDisplay model =
@@ -316,7 +359,7 @@ displayState model =
 
 title : String -> Element msg
 title str =
-    row [ centerX, Font.bold, paddingEach { top = 40, bottom = 0, left = 0, right = 0 } ] [ text str ]
+    row [ centerX, Font.bold, Font.color Style.titleColor, paddingEach { top = 40, bottom = 0, left = 0, right = 0 } ] [ text str ]
 
 
 outputDisplay : Model -> Element msg
@@ -367,3 +410,26 @@ filterInput model =
         , placeholder = Nothing
         , label = Input.labelLeft [ centerY ] (text <| "Exclude words: ")
         }
+
+
+getRandomNumber : Cmd Msg
+getRandomNumber =
+    Http.get
+        { url = randomNumberUrl 9
+        , expect = Http.expectString GotAtomsphericRandomNumber
+        }
+
+
+randomNumberUrl : Int -> String
+randomNumberUrl maxDigits =
+    let
+        maxNumber =
+            10 ^ maxDigits
+
+        prefix =
+            "https://www.random.org/integers/?num=1&min=1&max="
+
+        suffix =
+            "&col=1&base=10&format=plain&rnd=new"
+    in
+    prefix ++ String.fromInt maxNumber ++ suffix

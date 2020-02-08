@@ -1,12 +1,14 @@
 module EngineData exposing
-    ( Config
+    ( CCEarnings(..)
+    , Config
     , business1
     , business2
     , businesses
+    , config1
+    , config2
     , educator1
     , educators
     , generateHouseholds
-    , getConfiguration
     , initialHousehold
     , supplier1
     , suppliers
@@ -15,6 +17,7 @@ module EngineData exposing
 import Account exposing (Account)
 import CellGrid exposing (Position)
 import Color exposing (Color)
+import Dict exposing (Dict)
 import Entity
     exposing
         ( Characteristics(..)
@@ -31,9 +34,15 @@ import Money exposing (Money, Value)
 import Random
 
 
-getConfiguration : Int -> Config
-getConfiguration k =
-    List.Extra.getAt k configurations |> Maybe.withDefault config1
+
+--getConfiguration : Int -> Config
+--getConfiguration k =
+--    List.Extra.getAt k configurations |> Maybe.withDefault config1
+
+
+configurationDict : Dict Int Config
+configurationDict =
+    Dict.fromList [ ( 1, config1 ), ( 2, config2 ) ]
 
 
 type alias Config =
@@ -48,6 +57,7 @@ type alias Config =
     , fiatCurrencyName : String
     , complementaryCurrency : Money.Currency
     , complementaryCurrencyExpiration : Expiration
+    , ccEarnings : CCEarnings
 
     -- Businesses
     , contentReleaseInterval : Int
@@ -66,6 +76,7 @@ type alias Config =
     , maximumCCRatio : Float
     , probabilityOfPurchasing : Float
     , monthlyPurchaseCeilingInUnits : Int
+    , monthlyPurchaseCeilingHeadRoom : Int
 
     -- Households
     , numberOfHouseholds : Int
@@ -81,6 +92,11 @@ type alias Config =
     }
 
 
+type CCEarnings
+    = CCEarningsON
+    | CCEarningsOFF
+
+
 configurations : List Config
 configurations =
     [ config1, config2 ]
@@ -88,11 +104,12 @@ configurations =
 
 config1 : Config
 config1 =
-    { title = "1. Simple test, Fiat currency"
+    { title = "CASE 1. Fiat currency only"
     , tickLoopInterval = 0.3 * 1000
     , cycleLength = 360
     , renderWidth = 573
     , gridWidth = 30
+    , ccEarnings = CCEarningsOFF
 
     -- Financial
     , fiatCurrency = fiatCurrency
@@ -114,9 +131,10 @@ config1 =
     , minimumPurchaseOfA = 2
     , maximumPurchaseOfA = 15
     , educationalContentCycle = 30
-    , maximumCCRatio = 0.1
+    , maximumCCRatio = 0.0
     , probabilityOfPurchasing = 0.3
     , monthlyPurchaseCeilingInUnits = 80
+    , monthlyPurchaseCeilingHeadRoom = 10
 
     -- Educators
     -- Households
@@ -135,47 +153,9 @@ config1 =
 
 config2 : Config
 config2 =
-    { title = "2. Simple test, Fiat currency"
-    , tickLoopInterval = 100
-    , cycleLength = 360
-    , renderWidth = 500
-    , gridWidth = 30
-
-    -- Financial
-    , fiatCurrency = fiatCurrency
-    , fiatCurrencyName = "Real"
-    , complementaryCurrency = cambiatus
-    , complementaryCurrencyExpiration = Finite (Money.bankTime 360)
-    , educationPaymentPerCycle = 1.0
-
-    -- Businesses
-    , contentReleaseInterval = 15
-    , numberOfTimesToWatchContent = 1
-    , businessRadius = 10.0
-    , itemPrice = Money.createValue fiatCurrency 2
-    , itemCost = 1.0
-    , itemA = Item { name = "AA", price = Money.createValue fiatCurrency 2.0, quantity = 1 }
-    , itemAMoney = Money.createInfinite fiatCurrency 0 2.0
-    , randomPurchaseFraction = 0.1
-    , minimumBusinessInventoryOfA = 20
-    , minimumPurchaseOfA = 5
-    , maximumPurchaseOfA = 15
-    , educationalContentCycle = 30
-    , maximumCCRatio = 0.1
-    , probabilityOfPurchasing = 0.3
-    , monthlyPurchaseCeilingInUnits = 80
-
-    -- Households
-    , numberOfHouseholds = 20
-    , monthlyItemConsumption = 8
-    , householdPurchaseDays = [ 1, 5, 9, 13, 17, 21, 25, 28 ] -- not used
-    , householdMinimumPurchaseAmount = 2
-    , householdMaximumPurchaseAmount = 5
-    , householdLowInventoryThreshold = 2
-    , householdConsumptionDays = [ 3, 7, 12, 15, 19, 23, 26, 29 ]
-    , householdPayDays = [ 1, 15 ]
-    , periodicHouseHoldFiatIncome = 8.0
-    , monthlyCCIncome = Money.createValue cambiatus 0
+    { config1
+        | title = "CASE 2: with CC Earnings"
+        , ccEarnings = CCEarningsON
     }
 
 

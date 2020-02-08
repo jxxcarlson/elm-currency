@@ -5,11 +5,12 @@ module Action exposing
     , householdBuyGoods
     , payHouseholds
     , readEducationalContent
+    , recordData
     )
 
 import Account
 import ActionHelper as AH
-import EngineData exposing (Config)
+import EngineData exposing (CCEarnings(..), Config)
 import Entity exposing (Entity)
 import Internal.Types exposing (Expiration(..))
 import Inventory
@@ -88,38 +89,43 @@ initializeSupplier state =
 
 readEducationalContent : State -> State
 readEducationalContent state =
-    case modBy state.config.educationalContentCycle state.tick == 3 of
-        False ->
+    case state.config.ccEarnings of
+        CCEarningsOFF ->
             state
 
-        True ->
-            let
-                config =
-                    state.config
+        CCEarningsON ->
+            case modBy state.config.educationalContentCycle state.tick == 3 of
+                False ->
+                    state
 
-                exp =
-                    config.complementaryCurrencyExpiration
+                True ->
+                    let
+                        config =
+                            state.config
 
-                amount =
-                    config.educationPaymentPerCycle
+                        exp =
+                            config.complementaryCurrencyExpiration
 
-                earnCC : Entity -> Entity
-                earnCC e =
-                    AH.creditEntity config state.tick config.complementaryCurrency exp amount e
+                        amount =
+                            config.educationPaymentPerCycle
 
-                newBusinesses =
-                    List.map earnCC state.businesses
+                        earnCC : Entity -> Entity
+                        earnCC e =
+                            AH.creditEntity config state.tick config.complementaryCurrency exp amount e
 
-                n =
-                    List.length newBusinesses
+                        newBusinesses =
+                            List.map earnCC state.businesses
 
-                amountEarned =
-                    toFloat n * amount
+                        n =
+                            List.length newBusinesses
 
-                logString =
-                    "Earn CC for " ++ String.fromInt n ++ " biz: " ++ String.fromFloat amountEarned
-            in
-            { state | businesses = newBusinesses, log = logItem state logString }
+                        amountEarned =
+                            toFloat n * amount
+
+                        logString =
+                            "Earn CC for " ++ String.fromInt n ++ " biz: " ++ String.fromFloat amountEarned
+                    in
+                    { state | businesses = newBusinesses, log = logItem state logString }
 
 
 probability : Random.Generator Float
@@ -154,7 +160,7 @@ businessBuyGoods state =
                     Nothing
 
         fractionalPurchaseCeilingToDate =
-            round (toFloat (state.config.monthlyPurchaseCeilingInUnits * state.tick) / 30.0) + 5
+            round (toFloat (state.config.monthlyPurchaseCeilingInUnits * state.tick) / 30.0) + state.config.monthlyPurchaseCeilingHeadRoom
 
         business_ =
             case Maybe.andThen Entity.unitsPurchased business__ |> Maybe.map (\x -> x < fractionalPurchaseCeilingToDate) of
@@ -466,6 +472,18 @@ householdBuyGoods1 t state =
 
     else
         state
+
+
+recordData : Int -> State -> State
+recordData tick state =
+    let
+        i =
+            Report.businessInventoryOf "AA" state |> List.head |> Maybe.withDefault 0 |> toFloat
+
+        t =
+            toFloat tick
+    in
+    { state | data = ( t, i ) :: state.data }
 
 
 

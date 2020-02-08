@@ -16,6 +16,7 @@ type alias State =
     , totalHouseholdPurchases : Int
     , totalHouseholdConsumption : Int
     , log : List String
+    , data : List ( Float, Float )
     , tick : Int
     }
 
@@ -28,10 +29,11 @@ initialState =
     , households = []
     , seed = Random.initialSeed 1234
     , randInt = 4321
-    , config = EngineData.getConfiguration 0
+    , config = EngineData.config1
     , totalHouseholdPurchases = 0
     , totalHouseholdConsumption = 0
     , log = []
+    , data = []
     , tick = 0
     }
 
