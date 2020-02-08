@@ -1,9 +1,11 @@
 module Style exposing
     ( button
     , dashboard
+    , endColor
     , lightColor
     , log
     , mainColumn
+    , pausedColor
     , titleColor
     )
 
@@ -57,6 +59,16 @@ button =
 lightColor : Color
 lightColor =
     rgb255 200 200 200
+
+
+pausedColor : Color
+pausedColor =
+    rgb255 255 255 200
+
+
+endColor : Color
+endColor =
+    rgb255 255 200 200
 
 
 titleColor : Color

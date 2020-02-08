@@ -155,7 +155,12 @@ update msg model =
                             ( model, Cmd.none )
 
                         Just rn ->
-                            ( { model | randomAtmosphericInt = Just rn }, Cmd.none )
+                            ( { model
+                                | randomAtmosphericInt = Just rn
+                                , state = State.configure model.configuration rn
+                              }
+                            , Cmd.none
+                            )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -193,8 +198,20 @@ lineGraphAttributes =
     }
 
 
+bgColor model =
+    case model.runState of
+        End ->
+            Background.color Style.endColor
+
+        Paused ->
+            Background.color Style.pausedColor
+
+        Running ->
+            Background.color Style.lightColor
+
+
 graphDisplay model =
-    row [ moveDown 10, width fill, height (px 50), Background.color Style.lightColor ]
+    row [ paddingEach { top = 20, bottom = 0, left = 0, right = 0 }, moveDown 10, width fill, height (px 50), bgColor model ]
         [ SimpleGraph.barChart lineGraphAttributes (List.map Tuple.second model.state.data |> List.reverse) |> Element.html ]
 
 
@@ -202,6 +219,7 @@ dashboard : Model -> Element msg
 dashboard model =
     column Style.dashboard
         [ el [] (text <| model.state.config.title)
+        , el [] (text <| model.state.config.subtitle)
         , el [] (text <| "------------------------------")
         , el [] (text <| "Cycle length = " ++ String.fromInt model.state.config.cycleLength)
         , el [] (text <| clock model.counter)

@@ -47,6 +47,7 @@ configurationDict =
 
 type alias Config =
     { title : String
+    , subtitle : String
     , tickLoopInterval : Float
     , cycleLength : Int
     , renderWidth : Float
@@ -105,6 +106,7 @@ configurations =
 config1 : Config
 config1 =
     { title = "CASE 1. Fiat currency only"
+    , subtitle = "Simplistic random re-order model"
     , tickLoopInterval = 0.3 * 1000
     , cycleLength = 360
     , renderWidth = 573
@@ -155,6 +157,7 @@ config2 : Config
 config2 =
     { config1
         | title = "CASE 2: with CC Earnings"
+        , subtitle = "....l"
         , ccEarnings = CCEarningsON
     }
 
