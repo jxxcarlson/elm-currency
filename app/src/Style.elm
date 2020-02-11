@@ -37,11 +37,12 @@ dashboard =
 log =
     [ Background.color (rgb255 200 200 200)
     , paddingXY 12 18
-    , width (px 300)
+    , width (px 350)
     , height (px 570)
     , spacing 3
     , Font.size 14
     , Font.family [ Font.typeface "Courier" ]
+    , scrollbarY
     ]
 
 

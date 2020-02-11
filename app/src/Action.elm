@@ -218,7 +218,7 @@ businessBuyGoods state =
                     Report.fiatBalanceOfEntity (Money.bankTime 0) newBusiness |> String.fromFloat
 
                 logString =
-                    "Buy " ++ Entity.getName newBusiness ++ ", " ++ String.fromInt a ++ ", FB: " ++ oldFiatBalance ++ " >> " ++ newFiatBalance
+                    "Biz " ++ Entity.getName newBusiness ++ " buy " ++ String.fromInt a ++ ", bal: " ++ oldFiatBalance ++ " >> " ++ newFiatBalance
             in
             { state | seed = seed3, businesses = newBusinesses, log = logItem state logString }
 
@@ -438,11 +438,10 @@ householdBuyGoods_ t e state =
                 logString =
                     case message of
                         "InventoryFailure" ->
-                            "INVENT. FAILURE"
+                            "H" ++ Entity.getName newHousehold ++ " buy " ++ String.fromInt a ++ " from ((" ++ Entity.getName newBusiness ++ "))"
 
-                        -- "(IF)" ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
                         _ ->
-                            "HB" ++ Entity.getName newHousehold ++ " < " ++ Entity.getName newBusiness
+                            "H" ++ Entity.getName newHousehold ++ " buy " ++ String.fromInt a ++ " from " ++ Entity.getName newBusiness
             in
             { state
                 | households = newHouseholds

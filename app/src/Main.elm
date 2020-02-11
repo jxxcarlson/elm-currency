@@ -261,7 +261,7 @@ displayLog model =
                     List.filter filter model.state.log
 
         log =
-            "Log" :: "--------------------------" :: List.take 30 filteredLog
+            "Log" :: "--------------------------" :: filteredLog
     in
     List.map displayItem log
         |> column Style.log
